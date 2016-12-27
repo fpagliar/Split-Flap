@@ -44,8 +44,8 @@ class MessageRequester:
     
   def chunkinize(self, message):
     # TODO: split the message in chunks, show one chunk at a time with a -
-    #return [ message[i:i+chunk_size] for i in range(0, len(message), _display.size()) ]
-    #return [ message[i:i+chunk_size]+"-" for i in range(0, len(message), _display.size() - 1) ]
+    # return [ message[i:i+chunk_size] for i in range(0, len(message), _display.size()) ]
+    # return [ message[i:i+chunk_size]+"-" for i in range(0, len(message), _display.size() - 1) ]
     return message[:self._display.size()]
   
   def _readBatch(self):

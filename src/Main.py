@@ -17,7 +17,7 @@ def validateParam():
   print("Great! Now, we'll do a step by step to figure out how many turns are needed to pass each letter")
   i = 0
   while not Utils.askForConfirmation("Is it the next letter already?"):
-    i = i+1
+    i = i + 1
     motor.tick(1)
   print("The number of tiks per letter is:" + str(i))
 

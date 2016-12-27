@@ -2,7 +2,6 @@ import time
 from MotorController import MotorController
 import Utils
 
-
 def SetupDisplay(Character, length, properties):
   controller = MotorController(length, properties)
   characters = [Character(i, controller, properties) for i in range(0, length)]

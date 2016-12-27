@@ -34,7 +34,7 @@ class CharacterTest(unittest.TestCase):
     current = char.getCurrentLetter()
     char.setTarget('Z')
     self.assertFalse(char.isReady())
-    for _ in range(0, properties.TICKS_PER_LETTER-1):
+    for _ in range(0, properties.TICKS_PER_LETTER - 1):
       char.tick()
     self.assertEquals(current, char.getCurrentLetter())
 
