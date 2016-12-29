@@ -17,9 +17,8 @@ def SetupDisplay(Character, length, properties):
   return Display(characters, properties)
 
 class Display:
-  def __init__(self, characters, properties):
+  def __init__(self, characters):
     self._characters = characters
-    self._properties = properties
     
   def show(self, message):
     for i in range(0, len(self._characters)):
@@ -37,4 +36,4 @@ class Display:
     return "".join([elem.getCurrentLetter() for elem in self._characters])
     
   def hasFinished(self):
-    return all([elem.isReady() for elem in self._characters])    
+    return all([elem.isReady() for elem in self._characters])

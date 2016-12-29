@@ -1,14 +1,13 @@
 import unittest
 from Display import Display
 from unittest import mock
-from Properties import Properties
 
 class DisplayTest(unittest.TestCase):
 
   def test_show_message_sets_letter_to_characters(self):
     message = "ABCDEFG"
     characters = [mock.Mock(name=message[i]) for i in range(0, len(message))]
-    display = Display(characters, Properties())
+    display = Display(characters)
     display.show(message)
     for i in range(0, len(message)):
       characters[i].setTarget.assert_called_once_with(message[i])
@@ -19,14 +18,14 @@ class DisplayTest(unittest.TestCase):
     current = "AABBCC"
     for i in range(0, len(message)):
       characters[i].getCurrentLetter.return_value = current[i]
-    display = Display(characters, Properties())
+    display = Display(characters)
     display.show(message)
     self.assertEqual(current, display.getCurrentString())
     
   def setupHasFinishedTest(self, results):
     message = "A" * len(results)
     characters = [mock.Mock(name=message[i]) for i in range(0, len(message))]
-    display = Display(characters, Properties())
+    display = Display(characters)
     display.show(message)
     for i in range(0, len(results)):
       characters[i].isReady.return_value = results[i]
