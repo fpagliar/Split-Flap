@@ -1,5 +1,12 @@
 
-class TextBasedPin:
+_pins = {}
+
+def GetPin(pinId):
+  if pinId not in _pins:
+    _pins[pinId] = _TextBasedPin(pinId)
+  return _pins[pinId]  
+
+class _TextBasedPin:
   def __init__(self, pinNumber):
     self.id = pinNumber
     print("Setup pin: " + str(pinNumber))
@@ -15,3 +22,4 @@ class TextBasedPin:
 
   def off(self):
     self.set(False)
+

@@ -1,25 +1,28 @@
 
-class FourTo16Multiplexor:
-  def __init__(self, outputPins, powerPin):
-    self.outputs = outputPins
-    self.power = powerPin
+class Multiplexor:
+  def __init__(self, inputPins, powerPin):
+    self._inputs = inputPins
+    self._power = powerPin
 
-  def turnOn(self):
-    self.power.on()
+  def on(self):
+    self._power.on()
     
-  def turnOff(self):
-    self.power.off()
+  def off(self):
+    self._power.off()
 
   def set(self, outputId):
+    self._validateOutputId(outputId)
     values = self._getMultiplexorActivationValues(outputId)
-    for i in range(len(self.outputs)):
-      self.outputs[i].set(values[i])
+    for i in range(len(self._inputs)):
+      self._inputs[i].set(values[i])
+  
+  def _validateOutputId(self, outputId):
+    size = len(self._inputs)
+    if outputId <= 0 or outputId > 2 ** size:
+      raise Exception("The multiplexor provided has size:" + str(size) + " and can't represent output: " + str(outputId))
 
   def _getMultiplexorActivationValues(self, outputId):
-    ans = [False] * 16
-    ans[outputId] = True
-    return ans
+    # The format will turn the number to binary, and fill up with leading zeroes
+    fmt = '0' + str(len(self._inputs)) + 'b'
+    return [x == '1' for x in format(outputId - 1, fmt)]
     
-    # bin will give the number in binary string, we trail the leading '0b' prefix,
-    # and then convert to a boolean representing if it should be turned on or off
-#     return [x == '1' for x in bin(outputId)[2:]]
