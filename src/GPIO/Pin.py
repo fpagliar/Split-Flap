@@ -1,6 +1,13 @@
 import RPi.GPIO as GPIO
 
-class RaspyPin:
+_pins = {}
+
+def GetPin(pinId):
+  if pinId not in _pins:
+    _pins[pinId] = _RaspyPin(pinId)
+  return _pins[pinId]  
+
+class _RaspyPin:
   def __init__(self, pinNumber):
     self.id = pinNumber
     GPIO.setup(self.id, GPIO.OUT)
