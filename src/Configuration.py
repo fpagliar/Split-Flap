@@ -6,7 +6,7 @@ def serializeCollection(name, iterable):
 def serializeValue(name, value):
   return name + ": " + str(value) + "\n"
 
-def loadCollection(line, name, func = False):
+def loadCollection(line, name, func=False):
   prefix = name + ": "
   if prefix in line:
     line = line[len(prefix):]
@@ -15,7 +15,7 @@ def loadCollection(line, name, func = False):
     tokens = [func(elem) for elem in tokens]
   return tokens
 
-def loadValue(line, name, func = False):
+def loadValue(line, name, func=False):
   prefix = name + ": "
   if prefix in line:
     line = line[len(prefix):]
@@ -23,12 +23,21 @@ def loadValue(line, name, func = False):
     line = func(line) 
   return line
 
-def defaultConfiguration():
-  config = Configuration("properties.config")
+def defaultSystemConfiguration():
+  config = SystemConfiguration("properties.config")
   config.setDefaults()
+  config.load()
   return config
 
-class Configuration:
+def defaultSystemStatus():
+  status = SystemStatus("system_status.config")
+  status.load()
+  return status
+
+def cleanSystemStatus():
+  return SystemStatus("system_status.config")
+
+class SystemConfiguration:
   def __init__(self, filename):
     self.MOTOR_SEQUENCE = [
         [1, 0, 0, 1],
@@ -68,11 +77,54 @@ class Configuration:
     if os.path.isfile(self._filename):
       with open(self._filename, "r+") as file:
         lines = [line.rstrip('\n') for line in file]
-        self.CHARACTERS_ARRAY      = loadCollection(lines[0], 'CHARACTERS_ARRAY')
-        self.MULTIPLEXER_PINS      = loadCollection(lines[1], 'MULTIPLEXER_PINS', int)
-        self.SEQUENCE_PINS         = loadCollection(lines[2], 'SEQUENCE_PINS', int)
-        self.TICKS_PER_LETTER      = loadValue(lines[3], 'TICKS_PER_LETTER', int)
+        self.CHARACTERS_ARRAY = loadCollection(lines[0], 'CHARACTERS_ARRAY')
+        self.MULTIPLEXER_PINS = loadCollection(lines[1], 'MULTIPLEXER_PINS', int)
+        self.SEQUENCE_PINS = loadCollection(lines[2], 'SEQUENCE_PINS', int)
+        self.TICKS_PER_LETTER = loadValue(lines[3], 'TICKS_PER_LETTER', int)
         self.MULTIPLEXER_POWER_PIN = loadValue(lines[4], 'MULTIPLEXER_POWER_PIN', int)
-        self.NUMBER_OF_MOTORS      = loadValue(lines[5], 'NUMBER_OF_MOTORS', int)
-        self.FEED_FILENAME         = loadValue(lines[6], 'FEED_FILENAME')
-        self.LOG_FILENAME          = loadValue(lines[7], 'LOG_FILENAME')    
+        self.NUMBER_OF_MOTORS = loadValue(lines[5], 'NUMBER_OF_MOTORS', int)
+        self.FEED_FILENAME = loadValue(lines[6], 'FEED_FILENAME')
+        self.LOG_FILENAME = loadValue(lines[7], 'LOG_FILENAME')
+
+
+class SystemStatus:
+  def __init__(self, filename):
+    self._filename = filename
+    self._details = {}
+    self._ticksKey = "TICKS"
+    self._indexKey = "LETTER_INDEX"
+  
+  def set(self, motorId, currentTicks, currentLetterIndex):
+    self._details[motorId] = { self._ticksKey: currentTicks, self._indexKey: currentLetterIndex }
+  
+  def save(self):
+    with open(self._filename, "w+") as file:
+      for key, value in self._details.items():
+        file.write(serializeValue(str(key) + ">TICKS" , value[self._ticksKey]))
+        file.write(serializeValue(str(key) + ">LETTER_INDEX" , value[self._indexKey]))
+  
+  def cleanup(self):
+    with open(self._filename, "w+") as file:
+      file.truncate(0)
+      
+  def load(self):
+    with open(self._filename, "r+") as file:
+      for line in file:
+        motorId, rest = line.split(">")
+        motorId = int(motorId)
+        key, value = rest.split(":")
+        if motorId not in self._details:
+          self._details[motorId] = {}
+        self._details[motorId][key] = int(value)
+  
+  def getCurrentTicks(self, motorId):
+    return self._getDetail(motorId, self._ticksKey)
+
+  def getCurrentLetterIndex(self, motorId):
+    return self._getDetail(motorId, self._indexKey)
+
+  def _getDetail(self, motorId, key):
+    if motorId in self._details and key in self._details[motorId]:
+      return self._details[motorId][key]
+    else:
+      return 0
