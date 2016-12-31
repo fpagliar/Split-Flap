@@ -9,10 +9,8 @@ class MotorControllerTest(unittest.TestCase):
   
   def setupController(self):
     sequences = [mock.Mock(name = "Motor" + str(i)) for i in range(self._numberOfMotors)]
-    builder = mock.Mock()
-    builder.build.side_effect = sequences
     motorCommunicator = mock.Mock(name = "MotorCommunicator")
-    return sequences, motorCommunicator, MotorController(self._numberOfMotors, motorCommunicator, builder.build)
+    return sequences, motorCommunicator, MotorController(motorCommunicator, sequences)
 
   def test_tick_first_should_increment_that_squence(self):
     sequences, _, controller = self.setupController()

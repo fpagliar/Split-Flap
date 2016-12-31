@@ -17,7 +17,8 @@ class Character:
       # Increment the number of ticks in this letter
       self._increment()
       # Update the current system status
-      self._systemStatus.set(self._motorId, self._currentTicks, self._currentLetterIndex)
+      self._systemStatus.set(self._motorId, self._currentTicks, self._currentLetterIndex, 
+                             self._controller.getSequence(self._motorId).currentIndex())
       # Cleanup the old status before executing the change
       self._systemStatus.cleanup()
       # Make the controller send a tick to the motor

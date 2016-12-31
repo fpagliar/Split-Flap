@@ -1,6 +1,7 @@
 from DisplayFactory import DisplayFactory
-import TextBasedPin
+import Pin
+from Configuration import defaultSystemConfiguration, defaultSystemStatus
 
 if __name__ == "__main__":
-  display = DisplayFactory(TextBasedPin.GetPin).build()
+  display = DisplayFactory(Pin.GetPin, defaultSystemConfiguration(), defaultSystemStatus()).build()
   display.show("ABCDEFGH")

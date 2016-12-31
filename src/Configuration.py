@@ -93,15 +93,18 @@ class SystemStatus:
     self._details = {}
     self._ticksKey = "TICKS"
     self._indexKey = "LETTER_INDEX"
+    self._sequenceKey = "SEQUENCE_INDEX"
+    self._keySeparator = ">"
   
-  def set(self, motorId, currentTicks, currentLetterIndex):
-    self._details[motorId] = { self._ticksKey: currentTicks, self._indexKey: currentLetterIndex }
+  def set(self, motorId, currentTicks, currentLetterIndex, sequenceIndex):
+    self._details[motorId] = { self._ticksKey: currentTicks, self._indexKey: currentLetterIndex, self._sequenceKey: sequenceIndex }
   
   def save(self):
     with open(self._filename, "w+") as file:
       for key, value in self._details.items():
-        file.write(serializeValue(str(key) + ">TICKS" , value[self._ticksKey]))
-        file.write(serializeValue(str(key) + ">LETTER_INDEX" , value[self._indexKey]))
+        file.write(serializeValue(str(key) + self._keySeparator + self._ticksKey , value[self._ticksKey]))
+        file.write(serializeValue(str(key) + self._keySeparator + self._indexKey , value[self._indexKey]))
+        file.write(serializeValue(str(key) + self._keySeparator + self._sequenceKey , value[self._sequenceKey]))
   
   def cleanup(self):
     with open(self._filename, "w+") as file:
@@ -110,7 +113,7 @@ class SystemStatus:
   def load(self):
     with open(self._filename, "r+") as file:
       for line in file:
-        motorId, rest = line.split(">")
+        motorId, rest = line.split(self._keySeparator)
         motorId = int(motorId)
         key, value = rest.split(":")
         if motorId not in self._details:
@@ -122,6 +125,9 @@ class SystemStatus:
 
   def getCurrentLetterIndex(self, motorId):
     return self._getDetail(motorId, self._indexKey)
+
+  def getSequenceIndex(self, motorId):
+    return self._getDetail(motorId, self._sequenceKey)
 
   def _getDetail(self, motorId, key):
     if motorId in self._details and key in self._details[motorId]:

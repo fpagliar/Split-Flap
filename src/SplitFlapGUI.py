@@ -4,8 +4,8 @@ from threading import Thread
 import time
 
 class SplitFlapGUI:
-  def __init__(self, display):
-    self._display = display
+  def __init__(self, config):
+    self._config = config
     self._running = False
     self._slow = True
     self._window = Tk()
@@ -54,7 +54,8 @@ class SplitFlapGUI:
     for label in self._multiplexorPins:
       label.configure(text="0")
     ttk.Label(self._mainframe, text="PWR: ").grid(row=9, column=5, columnspan=2)
-    self._multiplexorPower = ttk.Label(self._mainframe, text="0").grid(row=9, column=7)
+    self._multiplexorPower = ttk.Label(self._mainframe, text="0")
+    self._multiplexorPower.grid(row=9, column=7)
     
   def setupCharacters(self):
     ttk.Label(self._mainframe, text="Characters: ").grid(row=0, column=0)
@@ -88,6 +89,9 @@ class SplitFlapGUI:
       collection.append(label)
     return collection
   
+  def setDisplay(self, display):
+    self._display = display
+      
   def tick(self):
     self._characterLetters[self._display.getCurrentIndex()].configure(background='light gray')
     self._display.tick()
@@ -119,10 +123,26 @@ class SplitFlapGUI:
     statusList = self._display.getCurrentStatus()
     for i in range(len(statusList)):
       letter, ticks, sequence = statusList[i]
-      self._characterLetters[i].configure(text=letter)
-      self._characterTicks[i].configure(text=ticks)
-      self._characterSequence[i].configure(text=sequence.currentIndex())  
-  
+      self.setLabelValue(self._characterLetters[i], letter)
+      self.setLabelValue(self._characterTicks[i], ticks)
+      self.setLabelValue(self._characterSequence[i], sequence.currentIndex())
+
+  def log(self, pinId, isActive):
+    value = 0
+    if isActive:
+      value = 1
+    if pinId in self._config.MULTIPLEXER_PINS:
+      self.setLabelValue(self._multiplexorPins[self._config.MULTIPLEXER_PINS.index(pinId)], value)
+    elif pinId in self._config.SEQUENCE_PINS:
+      self.setLabelValue(self._sequencePins[self._config.SEQUENCE_PINS.index(pinId)], value)
+    elif pinId == self._config.MULTIPLEXER_POWER_PIN:
+      self.setLabelValue(self._multiplexorPower, value)
+    else:
+      raise Exception("Invalid pin: " + str(pinId))
+
+  def setLabelValue(self, label, value):
+    label.configure(text=value)
+
   def toggleSpeed(self):
     self._slow = not self._slow
   

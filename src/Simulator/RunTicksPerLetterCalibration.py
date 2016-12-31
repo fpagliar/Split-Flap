@@ -1,6 +1,6 @@
 from Calibrator import Calibrator
-import TextBasedPin
+import Pin
 
 if __name__ == "__main__":
-  calibrator = Calibrator(TextBasedPin.GetPin)
+  calibrator = Calibrator(Pin.GetTextPin)
   calibrator.calibrateTicksPerLetter()

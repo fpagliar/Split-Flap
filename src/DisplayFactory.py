@@ -1,26 +1,30 @@
 from MotorController import MotorController
 from MotorCommunicator import MotorCommunicator
 from Multiplexor import Multiplexor
-from Configuration import defaultSystemConfiguration, defaultSystemStatus
 from MotorSequence import MotorSequence
 from Display import Display
 from Character import Character
 
 class DisplayFactory:
-  def __init__(self, pinBuilder):
+  def __init__(self, pinBuilder, configuration, systemStatus):
     self._pinBuilder = pinBuilder
-    self._config = defaultSystemConfiguration()
+    self._config = configuration
+    self._systemStatus = systemStatus
     
   def build(self):
-    systemStatus = defaultSystemStatus()
     multiplexorPins = self._createPinsFromIds(self._config.MULTIPLEXER_PINS)
     powerPin = self._pinBuilder(self._config.MULTIPLEXER_POWER_PIN)
     multiplexor = Multiplexor(multiplexorPins, powerPin)
-    controller = MotorController(self._config.NUMBER_OF_MOTORS, MotorCommunicator(multiplexor), self._sequenceBuilder)    
-    return Display([Character(motorId, controller, self._config, systemStatus) for motorId in range(1, self._config.NUMBER_OF_MOTORS + 1)])
+    sequences = [self._createMotorSequence(i+1) for i in range(self._config.NUMBER_OF_MOTORS)]
+    controller = MotorController(MotorCommunicator(multiplexor), sequences)
+    return Display([Character(motorId, controller, self._config, self._systemStatus) for motorId in range(1, self._config.NUMBER_OF_MOTORS + 1)])
+  
+  def _createMotorSequence(self, motorId):
+    return MotorSequence(self._createPinsFromIds(self._config.SEQUENCE_PINS), self._config.MOTOR_SEQUENCE, 
+                         self._systemStatus.getSequenceIndex(motorId))
   
   def _createPinsFromIds(self, ids):
     return [self._pinBuilder(ids[i]) for i in range(len(ids))]    
   
-  def _sequenceBuilder(self):
-    return MotorSequence(self._createPinsFromIds(self._config.SEQUENCE_PINS), self._config.MOTOR_SEQUENCE)
+#   def _sequenceBuilder(self):
+#     return MotorSequence(self._createPinsFromIds(self._config.SEQUENCE_PINS), self._config.MOTOR_SEQUENCE)

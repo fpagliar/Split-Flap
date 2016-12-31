@@ -3,11 +3,11 @@ from datetime import datetime
 from datetime import timedelta
 
 class MotorController:
-  def __init__(self, numberOfMotors, motorCommunicator, _sequenceBuilder):
+  def __init__(self, motorCommunicator, sequenceCollection):
     self._latestUpdateTime = {}
-    self._numberOfMotors = numberOfMotors
     self._motorCommunicator = motorCommunicator
-    self._sequences = [_sequenceBuilder() for _ in range(numberOfMotors)]
+    self._sequences = sequenceCollection
+    self._numberOfMotors = len(sequenceCollection)
 
   def tick(self, motorId):
     if motorId < 1 or motorId > self._numberOfMotors:

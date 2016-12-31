@@ -7,3 +7,12 @@ def askForConfirmation(message):
   else:
     print("Invalid input, please try again")
     return askForConfirmation(message)
+  
+def askForOption(message, dictionary):
+  answer = input(message + ": ")
+  if answer in dictionary:
+    return dictionary.index(answer)
+  else:
+    print("Invalid input, please try again")
+    return askForOption(message, dictionary)
+  
