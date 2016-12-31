@@ -13,13 +13,9 @@ class Character:
         self._currentTicks = self._systemStatus.getCurrentTicks(motorId)
   
   def tick(self):
-    if self._currentLetterIndex != self._targetLetterIndex:
+    if not self.hasFinished():
       # Increment the number of ticks in this letter
-      self._currentTicks = self._currentTicks + 1
-      if self._currentTicks == self._configuration.TICKS_PER_LETTER:
-        self._currentTicks = 0
-        self._setNextLetter()
-      
+      self._increment()
       # Update the current system status
       self._systemStatus.set(self._motorId, self._currentTicks, self._currentLetterIndex)
       # Cleanup the old status before executing the change
@@ -30,6 +26,15 @@ class Character:
       # the save, we lose the status, but that is OK since it wouldn't be possible to figure out if the call
       # was executed successfully or not.
       self._systemStatus.save()
+  
+  def _increment(self):
+      self._currentTicks += 1
+      if self._currentTicks == self._configuration.TICKS_PER_LETTER:
+        self._currentTicks = 0
+        self._setNextLetter()
+  
+  def hasFinished(self):
+    return self._currentLetterIndex == self._targetLetterIndex
   
   def setTarget(self, letter):
     self._targetLetterIndex = self._configuration.CHARACTERS_ARRAY.index(letter)
@@ -42,6 +47,9 @@ class Character:
 
   def getTargetLetter(self):
     return self._configuration.CHARACTERS_ARRAY[self._targetLetterIndex]
+  
+  def getCurrentStatus(self):
+    return (self.getCurrentLetter(), self._currentTicks, self._controller.getSequence(self._motorId))
 
   def _setNextLetter(self):
     pos = self._currentLetterIndex

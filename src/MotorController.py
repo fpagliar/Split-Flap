@@ -13,11 +13,11 @@ class MotorController:
     if motorId < 1 or motorId > self._numberOfMotors:
       raise Exception("Invalid motor id: " + str(motorId) + " has to be in the range 1 - " + str(self._numberOfMotors))
     self._waitIfNeeded(motorId)
-    sequence = self._getSequence(motorId)
+    sequence = self.getSequence(motorId)
     sequence.next()
     self._motorCommunicator.send(motorId, sequence)
     
-  def _getSequence(self, motorId):
+  def getSequence(self, motorId):
     return self._sequences[motorId - 1]
       
   def _waitIfNeeded(self, motorId):

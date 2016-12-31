@@ -4,9 +4,9 @@ import time
 import random
 
 class MessageRequester:
-  def __init__(self, feed, log, display):
+  def __init__(self, feed, logger, display):
     self._feed = feed
-    self._log = log
+    self._logger = logger
     self._display = display
     self._messageQueue = Queue(maxsize=0)
     
@@ -30,7 +30,7 @@ class MessageRequester:
   def _processMessage(self):
     message = self._messageQueue.get()
     
-    with open(self._log, "a") as myfile:
+    with open(self._logger, "a") as myfile:
       myfile.write("SHOW: " + message)
 
     chunks = self.chunkinize(message)
@@ -55,6 +55,6 @@ class MessageRequester:
     self._feed.truncate(0)
     
   def _loadLine(self, message):
-#     with open(self._log, "a") as myfile:
-    self._log.write("READ: " + message)
+#     with open(self._logger, "a") as myfile:
+    self._logger.write("READ: " + message)
     self._messageQueue.put(message)
