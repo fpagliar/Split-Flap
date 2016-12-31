@@ -16,13 +16,13 @@ class Character:
     if not self.hasFinished():
       # Increment the number of ticks in this letter
       self._increment()
-      # Update the current system status
-      self._systemStatus.set(self._motorId, self._currentTicks, self._currentLetterIndex, 
-                             self._controller.getSequence(self._motorId).currentIndex())
       # Cleanup the old status before executing the change
       self._systemStatus.cleanup()
       # Make the controller send a tick to the motor
       self._controller.tick(self._motorId)
+      # Update the current system status
+      self._systemStatus.set(self._motorId, self._currentTicks, self._currentLetterIndex, 
+                             self._controller.getSequence(self._motorId).currentIndex())
       # Write the new system status. If there is a failure/program is killed between the cleanup and 
       # the save, we lose the status, but that is OK since it wouldn't be possible to figure out if the call
       # was executed successfully or not.

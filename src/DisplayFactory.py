@@ -24,7 +24,4 @@ class DisplayFactory:
                          self._systemStatus.getSequenceIndex(motorId))
   
   def _createPinsFromIds(self, ids):
-    return [self._pinBuilder(ids[i]) for i in range(len(ids))]    
-  
-#   def _sequenceBuilder(self):
-#     return MotorSequence(self._createPinsFromIds(self._config.SEQUENCE_PINS), self._config.MOTOR_SEQUENCE)
+    return [self._pinBuilder(ids[i]) for i in range(len(ids))]

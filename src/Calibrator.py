@@ -40,20 +40,12 @@ class Calibrator:
     print("Please spin all the flaps to show the letter A")
     for i in range (1, self._config.NUMBER_OF_MOTORS + 1):
       print("Now configuring the character " + str(i))
+      # This will help us take the ticks variable to zero (first appearance of the letter = 0)
+      # Plus it will also configure our sequence to execute correctly (if the motor is waiting for 
+      # sequence 5 and we start from zero, it will ignore our calls 0-4, and start turning from 5 onwards.
       while not Utils.askForConfirmation("Is it showing letter B now?"):
         controller.tick(i)
       systemStatus.set(i, 0, self._config.CHARACTERS_ARRAY.index('B'), controller.getSequence(1).currentIndex())
-#       print("Let me first turn in order to get the sequence to the start point")
-#       for _ in range(len(self._config.MOTOR_SEQUENCE) + 1):
-#         controller.tick(i)
-#       currSequence = 0
-#       print("Now, we will try to configure the ticks to zero")
-#       letterIndex = Utils.askForOption("What letter is it showing now?", self._config.CHARACTERS_ARRAY)
-#       while not Utils.askForConfirmation("Is it showing letter " + self._config.CHARACTERS_ARRAY[letterIndex + 1] + " now?"):
-#         currSequence += 1
-#         controller.tick(i)
-      # Ticks is now at 0. What we want, is to send the whole sequence of 
-#       systemStatus.set(i, 0, letterIndex + 1, currSequence)
     systemStatus.save()
     print("Great, now the split-flap is correctly configured")
     

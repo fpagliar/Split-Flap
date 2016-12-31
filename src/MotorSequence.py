@@ -20,4 +20,4 @@ class MotorSequence:
     return self._currentIndex
   
   def __str__(self):
-     return self.currentIndex()
+    return self.currentIndex()
