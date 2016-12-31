@@ -91,6 +91,7 @@ class SplitFlapGUI:
   
   def setDisplay(self, display):
     self._display = display
+    self.refreshCharacters()
       
   def tick(self):
     self._characterLetters[self._display.getCurrentIndex()].configure(background='light gray')
