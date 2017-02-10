@@ -1,4 +1,5 @@
 import os.path
+from distutils.util import strtobool
 
 def serializeCollection(name, iterable):
   return serializeValue(name, "|".join([str(elem) for elem in iterable]))
@@ -60,6 +61,7 @@ class SystemConfiguration:
     self.NUMBER_OF_MOTORS = 10
     self.FEED_FILENAME = "feed.txt"
     self.LOG_FILENAME = "log.txt"
+    self.USE_MULTIPLEXOR = False
     
   def save(self):
     with open(self._filename, "w+") as file:    
@@ -72,6 +74,7 @@ class SystemConfiguration:
       file.write(serializeValue("NUMBER_OF_MOTORS", self.NUMBER_OF_MOTORS))
       file.write(serializeValue("FEED_FILENAME", self.FEED_FILENAME))
       file.write(serializeValue("LOG_FILENAME", self.LOG_FILENAME))
+      file.write(serializeValue("USE_MULTIPLEXOR", self.USE_MULTIPLEXOR))
         
   def load(self):
     if os.path.isfile(self._filename):
@@ -85,7 +88,7 @@ class SystemConfiguration:
         self.NUMBER_OF_MOTORS = loadValue(lines[5], 'NUMBER_OF_MOTORS', int)
         self.FEED_FILENAME = loadValue(lines[6], 'FEED_FILENAME')
         self.LOG_FILENAME = loadValue(lines[7], 'LOG_FILENAME')
-
+        self.USE_MULTIPLEXOR = loadValue(lines[8], 'USE_MULTIPLEXOR', strtobool)
 
 class SystemStatus:
   def __init__(self, filename):

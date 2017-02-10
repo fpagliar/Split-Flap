@@ -1,6 +1,7 @@
 from MotorController import MotorController
 from MotorCommunicator import MotorCommunicator
 from Multiplexor import Multiplexor
+from DirectConnection import DirectConnection
 from Configuration import defaultSystemConfiguration, cleanSystemStatus
 from MotorSequence import MotorSequence
 import Utils
@@ -13,8 +14,12 @@ class Calibrator:
     
   def setupController(self, motors):
     multiplexorPins = self._createPinsFromIds(self._config.MULTIPLEXER_PINS)
-    powerPin = self._pinBuilder(self._config.MULTIPLEXER_POWER_PIN)
-    multiplexor = Multiplexor(multiplexorPins, powerPin)    
+    if self._config.USE_MULTIPLEXOR:
+      powerPin = self._pinBuilder(self._config.MULTIPLEXER_POWER_PIN)
+      multiplexor = Multiplexor(multiplexorPins, powerPin)
+    else:
+      multiplexor = DirectConnection(multiplexorPins)      
+
     return MotorController(MotorCommunicator(multiplexor), [self._sequenceBuilder() for _ in range(motors)])
     
   def calibrateTicksPerLetter(self):

@@ -1,6 +1,7 @@
 from MotorController import MotorController
 from MotorCommunicator import MotorCommunicator
 from Multiplexor import Multiplexor
+from DirectConnection import DirectConnection
 from MotorSequence import MotorSequence
 from Display import Display
 from Character import Character
@@ -13,8 +14,11 @@ class DisplayFactory:
     
   def build(self):
     multiplexorPins = self._createPinsFromIds(self._config.MULTIPLEXER_PINS)
-    powerPin = self._pinBuilder(self._config.MULTIPLEXER_POWER_PIN)
-    multiplexor = Multiplexor(multiplexorPins, powerPin)
+    if self._config.USE_MULTIPLEXOR:
+      powerPin = self._pinBuilder(self._config.MULTIPLEXER_POWER_PIN)
+      multiplexor = Multiplexor(multiplexorPins, powerPin)
+    else:
+      multiplexor = DirectConnection(multiplexorPins)      
     sequences = [self._createMotorSequence(i+1) for i in range(self._config.NUMBER_OF_MOTORS)]
     controller = MotorController(MotorCommunicator(multiplexor), sequences)
     return Display([Character(motorId, controller, self._config, self._systemStatus) for motorId in range(1, self._config.NUMBER_OF_MOTORS + 1)])
