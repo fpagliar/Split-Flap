@@ -1,5 +1,5 @@
 import os.path
-from distutils.util import strtobool
+from enum import Enum
 
 def serializeCollection(name, iterable):
   return serializeValue(name, "|".join([str(elem) for elem in iterable]))
@@ -38,6 +38,16 @@ def defaultSystemStatus():
 def cleanSystemStatus():
   return SystemStatus("system_status.config")
 
+class Keywords(Enum):
+    TICKS_PER_LETTER = "TICKS_PER_LETTER"
+    NUMBER_OF_MOTORS = "NUMBER_OF_MOTORS"
+    FEED_FILENAME = "FEED_FILENAME"
+    LOG_FILENAME = "LOG_FILENAME"
+    CHARACTERS_ARRAY = "CHARACTERS_ARRAY"
+    DATA_PIN = "DATA_PIN"
+    CLOCK_PIN = "CLOCK_PIN"
+    SHIFT_PIN = "SHIFT_PIN"
+
 class SystemConfiguration:
   def __init__(self, filename):
     self.MOTOR_SEQUENCE = [
@@ -53,42 +63,45 @@ class SystemConfiguration:
     self._filename = filename
     
   def setDefaults(self):
-    self.CHARACTERS_ARRAY = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', ' ', ' ', ' ']
-    self.MULTIPLEXER_PINS = [1, 2, 3, 4]
-    self.SEQUENCE_PINS = [5, 6, 7, 8]
-    self.TICKS_PER_LETTER = 3
-    self.MULTIPLEXER_POWER_PIN = 10
-    self.NUMBER_OF_MOTORS = 10
-    self.FEED_FILENAME = "feed.txt"
-    self.LOG_FILENAME = "log.txt"
-    self.USE_MULTIPLEXOR = False
-    
+    self.values = {
+      Keywords.TICKS_PER_LETTER : 3,
+      Keywords.NUMBER_OF_MOTORS : 10,
+      Keywords.FEED_FILENAME : "feed.txt",
+      Keywords.LOG_FILENAME : "log.txt",
+      Keywords.DATA_PIN : 10,
+      Keywords.CLOCK_PIN : 11,
+      Keywords.SHIFT_PIN : 12,
+    }
+
+    self.collections = {
+        Keywords.CHARACTERS_ARRAY : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', ' ', ' ', ' '],
+    }
+  
+  def get(self, key):
+    if key in self.values:
+      return self.values[key]
+    else:
+      return self.collections[key]  
+  
   def save(self):
     with open(self._filename, "w+") as file:    
       file.truncate(0)
-      file.write(serializeCollection("CHARACTERS_ARRAY" , self.CHARACTERS_ARRAY))
-      file.write(serializeCollection("MULTIPLEXER_PINS", self.MULTIPLEXER_PINS))
-      file.write(serializeCollection("SEQUENCE_PINS", self.SEQUENCE_PINS))
-      file.write(serializeValue("TICKS_PER_LETTER", self.TICKS_PER_LETTER))
-      file.write(serializeValue("MULTIPLEXER_POWER_PIN", self.MULTIPLEXER_POWER_PIN))
-      file.write(serializeValue("NUMBER_OF_MOTORS", self.NUMBER_OF_MOTORS))
-      file.write(serializeValue("FEED_FILENAME", self.FEED_FILENAME))
-      file.write(serializeValue("LOG_FILENAME", self.LOG_FILENAME))
-      file.write(serializeValue("USE_MULTIPLEXOR", self.USE_MULTIPLEXOR))
+      for key in self.values:
+        file.write(serializeValue(key, self.values[key]))
+      for key in self.collections:
+        file.write(serializeCollection(key, self.collections[key]))
         
   def load(self):
     if os.path.isfile(self._filename):
       with open(self._filename, "r+") as file:
         lines = [line.rstrip('\n') for line in file]
-        self.CHARACTERS_ARRAY = loadCollection(lines[0], 'CHARACTERS_ARRAY')
-        self.MULTIPLEXER_PINS = loadCollection(lines[1], 'MULTIPLEXER_PINS', int)
-        self.SEQUENCE_PINS = loadCollection(lines[2], 'SEQUENCE_PINS', int)
-        self.TICKS_PER_LETTER = loadValue(lines[3], 'TICKS_PER_LETTER', int)
-        self.MULTIPLEXER_POWER_PIN = loadValue(lines[4], 'MULTIPLEXER_POWER_PIN', int)
-        self.NUMBER_OF_MOTORS = loadValue(lines[5], 'NUMBER_OF_MOTORS', int)
-        self.FEED_FILENAME = loadValue(lines[6], 'FEED_FILENAME')
-        self.LOG_FILENAME = loadValue(lines[7], 'LOG_FILENAME')
-        self.USE_MULTIPLEXOR = loadValue(lines[8], 'USE_MULTIPLEXOR', strtobool)
+        i = 0
+        for key in self.values:
+          self.values[key] = loadValue(lines[i], key, int)
+          i = i + 1
+        for key in self.collections:
+          self.collections[key] = loadCollection(lines[i], key)
+          i = i + 1
 
 class SystemStatus:
   def __init__(self, filename):

@@ -1,6 +1,4 @@
-from MotorController import MotorController
-from MotorCommunicator import MotorCommunicator
-from Multiplexor import Multiplexor
+from RoundRobinMotorSetup import Multiplexor, MotorCommunicator, MotorController
 from DirectConnection import DirectConnection
 from Configuration import defaultSystemConfiguration, cleanSystemStatus
 from MotorSequence import MotorSequence

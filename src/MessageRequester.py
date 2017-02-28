@@ -1,10 +1,8 @@
 from queue import Queue
-from datetime import datetime
-import time
-import random
 
 class MessageRequester:
-  def __init__(self, feed, logger, display):
+  def __init__(self, timer, feed, logger, display):
+    self._timer = timer
     self._feed = feed
     self._logger = logger
     self._display = display
@@ -12,15 +10,10 @@ class MessageRequester:
     
   def start(self):
     while True:
-      if self.isAcceptableTime():
+      if self._timer.isAcceptableTime():
         self.tick()
-      minutes = random.random() * 59 + 1
-      time.sleep(60 * minutes)
+      self._timer.waitForInput()
   
-  def isAcceptableTime(self):
-    now = datetime.now()
-    return now.hour > 10 and now.hour < 23
-
   def tick(self):
     if self._messageQueue.empty():
       self._readBatch()
@@ -34,12 +27,11 @@ class MessageRequester:
       myfile.write("SHOW: " + message)
 
     chunks = self.chunkinize(message)
-    for _ in range(0, 5):
+    for _ in range(5):
       for chunk in chunks:
         self._display.show(chunk)
-        time.sleep(60)
-      time.sleep(60 * 5)
-
+        self._timer.waitShowChunk()
+      self._timer.waitBetweenMessageRepetitions()
     self._messageQueue.task_done()
     
   def chunkinize(self, message):
@@ -49,12 +41,10 @@ class MessageRequester:
     return message[:self._display.size()]
   
   def _readBatch(self):
-#     with open(self._feed, 'rw+') as file:
     for line in self._feed:
         self._loadLine(line)
     self._feed.truncate(0)
     
   def _loadLine(self, message):
-#     with open(self._logger, "a") as myfile:
     self._logger.write("READ: " + message)
     self._messageQueue.put(message)

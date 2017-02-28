@@ -1,8 +1,9 @@
 import time
 
 class Display:
-  def __init__(self, characters):
+  def __init__(self, characters, shiftRegistry):
     self._characters = characters
+    self._shiftRegistry = shiftRegistry
     self._index = 0
     
   def show(self, message):
@@ -12,13 +13,14 @@ class Display:
   def run(self):
     while not self.hasFinished():
       self.tick()
-      time.sleep(1)
+      time.sleep(1) # TODO: remove, just to go slow for testing
       
   def tick(self):
     if not self.hasFinished():
       self._characters[self._index].tick()
       self._index +=1
       self._index %= len(self._characters)
+    self._shiftRegistry.publish()
 
   def setTarget(self, message):
     for i in range(0, len(self._characters)):
