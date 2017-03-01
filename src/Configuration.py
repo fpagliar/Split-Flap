@@ -47,6 +47,7 @@ class Keywords(Enum):
     DATA_PIN = "DATA_PIN"
     CLOCK_PIN = "CLOCK_PIN"
     SHIFT_PIN = "SHIFT_PIN"
+    SEQUENCE_PINS = "SEQUENCE_PINS"
 
 class SystemConfiguration:
   def __init__(self, filename):
@@ -75,6 +76,7 @@ class SystemConfiguration:
 
     self.collections = {
         Keywords.CHARACTERS_ARRAY : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', ' ', ' ', ' '],
+        Keywords.SEQUENCE_PINS : [10, 11, 12, 13]
     }
   
   def get(self, key):

@@ -43,4 +43,7 @@ class _TextBasedPin:
 
   def off(self):
     self.set(False)
+    
+  def __str__(self):
+    return str(self.id)
 

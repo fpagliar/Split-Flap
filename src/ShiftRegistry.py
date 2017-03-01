@@ -5,9 +5,9 @@ def buildShiftRegistry(dataPin, clockPin, shiftPin, timer, sequences):
   return SequenceManager(sequences, registry)
 
 class SequenceManager:
-  def __init__(self, sequences, shiftRegistry):
+  def __init__(self, sequences, listener):
     self._sequences = sequences
-    self._registry = shiftRegistry
+    self._registry = listener
   
   def publish(self):
     currentStatuses = [x.current() for x in self._sequences]

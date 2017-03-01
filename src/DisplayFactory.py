@@ -4,12 +4,22 @@ from Configuration import Keywords
 from Character import Character
 from Timer import Timer
 from ShiftRegistry import buildShiftRegistry
+from DirectConnection import DirectConnection
+from Logger import log
 
 class DisplayFactory:
   def __init__(self, pinBuilder, configuration, systemStatus):
     self._pinBuilder = pinBuilder
     self._config = configuration
     self._systemStatus = systemStatus
+    
+  def buildCharacterTester(self):
+    sequence = self._createMotorSequence(1)
+    character = Character(1, sequence, self._config, self._systemStatus)
+    pinIds = self._config.get(Keywords.SEQUENCE_PINS)
+    pins = self._createPinsFromIds(pinIds)
+    connection = DirectConnection(pins, sequence)
+    return Display([character], connection)
     
   def _getPin(self, keyword):
     return self._pinBuilder(self._config.get(keyword))

@@ -1,14 +1,16 @@
 from Configuration import Keywords
+from Logger import log
 
 class Character:
   def __init__(self, motorId, sequence, configuration, systemStatus):
-        self._motorId = motorId
-        self._sequence = sequence
-        self._configuration = configuration
-        self._systemStatus = systemStatus
-        self._currentLetterIndex = self._systemStatus.getCurrentLetterIndex(motorId)
-        self._targetLetterIndex = 0
-        self._currentTicks = self._systemStatus.getCurrentTicks(motorId)
+    log("Creating character with id: " + str(motorId))
+    self._motorId = motorId
+    self._sequence = sequence
+    self._configuration = configuration
+    self._systemStatus = systemStatus
+    self._currentLetterIndex = self._systemStatus.getCurrentLetterIndex(motorId)
+    self._targetLetterIndex = 0
+    self._currentTicks = self._systemStatus.getCurrentTicks(motorId)
   
   def tick(self):
     if not self.hasFinished():
@@ -27,15 +29,17 @@ class Character:
       self._systemStatus.save()
   
   def _increment(self):
-      self._currentTicks += 1
-      if self._currentTicks == self._configuration.get(Keywords.TICKS_PER_LETTER):
-        self._currentTicks = 0
-        self._setNextLetter()
+    self._currentTicks += 1
+    if self._currentTicks == self._configuration.get(Keywords.TICKS_PER_LETTER):
+      self._currentTicks = 0
+      self._setNextLetter()
+    log("Incrementing ticks for character(" + str(self._motorId) + ") to: " + str(self._currentTicks))
   
   def hasFinished(self):
     return self._currentLetterIndex == self._targetLetterIndex
   
   def setTarget(self, letter):
+    log("Setting target for character(" + str(self._motorId) + "): " + letter)
     self._targetLetterIndex = self._configuration.get(Keywords.CHARACTERS_ARRAY).index(letter)
   
   def isReady(self):
@@ -56,3 +60,4 @@ class Character:
     if pos == len(self._configuration.get(Keywords.CHARACTERS_ARRAY)):
       pos = 0
     self._currentLetterIndex = pos
+    log("Setting letter for character(" + str(self._motorId) + "): " + self.getCurrentLetter())

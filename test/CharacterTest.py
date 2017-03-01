@@ -1,7 +1,7 @@
 import unittest
 from Character import Character
 from unittest import mock
-from Configuration import defaultSystemConfiguration, cleanSystemStatus
+from Configuration import defaultSystemConfiguration, cleanSystemStatus, Keywords
 
 class CharacterTest(unittest.TestCase):
 
@@ -34,7 +34,7 @@ class CharacterTest(unittest.TestCase):
     current = char.getCurrentLetter()
     char.setTarget('Z')
     self.assertFalse(char.isReady())
-    for _ in range(0, properties.TICKS_PER_LETTER - 1):
+    for _ in range(0, properties.get(Keywords.TICKS_PER_LETTER) - 1):
       char.tick()
     self.assertEquals(current, char.getCurrentLetter())
 
@@ -44,7 +44,7 @@ class CharacterTest(unittest.TestCase):
     current = char.getCurrentLetter()
     char.setTarget('Z')
     self.assertFalse(char.isReady())
-    for _ in range(0, properties.TICKS_PER_LETTER):
+    for _ in range(0, properties.get(Keywords.TICKS_PER_LETTER)):
       char.tick()
     self.assertNotEquals(current, char.getCurrentLetter())
 
@@ -54,7 +54,7 @@ class CharacterTest(unittest.TestCase):
     current = char.getCurrentLetter()
     char.setTarget('A')
     self.assertTrue(char.isReady())
-    for _ in range(0, properties.TICKS_PER_LETTER):
+    for _ in range(0, properties.get(Keywords.TICKS_PER_LETTER)):
       char.tick()
     self.assertEquals(current, char.getCurrentLetter())
 
@@ -63,39 +63,39 @@ class CharacterTest(unittest.TestCase):
     char = Character(1, mock.Mock(), properties, cleanSystemStatus())
     char.setTarget('B')
     self.assertFalse(char.isReady())
-    for _ in range(0, properties.TICKS_PER_LETTER):
+    for _ in range(0, properties.get(Keywords.TICKS_PER_LETTER)):
       char.tick()
     self.assertTrue(char.isReady())
     self.assertEquals('B', char.getCurrentLetter())
     
   def test_run_once_informs_controller(self):
-    controller = mock.Mock()
+    sequence = mock.Mock()
     properties = defaultSystemConfiguration()
-    char = Character(1, controller, properties, cleanSystemStatus())
+    char = Character(1, sequence, properties, cleanSystemStatus())
     char.setTarget('B')
     char.tick()
-    controller.tick.assert_called_once_with(1)
+    sequence.next.assert_called_once_with()
 
   def test_run_informs_controller_every_tick(self):
-    controller = mock.Mock()
+    sequence = mock.Mock()
     properties = defaultSystemConfiguration()
-    char = Character(1, controller, properties, cleanSystemStatus())
+    char = Character(1, sequence, properties, cleanSystemStatus())
     current = char.getCurrentLetter()
     char.setTarget('Z')
     self.assertFalse(char.isReady())
-    for _ in range(0, properties.TICKS_PER_LETTER):
+    for _ in range(0, properties.get(Keywords.TICKS_PER_LETTER)):
       char.tick()
     self.assertNotEquals(current, char.getCurrentLetter())
-    controller.tick.assert_called_with(1)
+    sequence.next.assert_called_with()
 
   def test_run_does_not_inform_controller_if_ready(self):
-    controller = mock.Mock()
+    sequence = mock.Mock()
     properties = defaultSystemConfiguration()
-    char = Character(1, controller, properties, cleanSystemStatus())
+    char = Character(1, sequence, properties, cleanSystemStatus())
     self.assertTrue(char.isReady())
-    for _ in range(0, properties.TICKS_PER_LETTER):
+    for _ in range(properties.get(Keywords.TICKS_PER_LETTER)):
       char.tick()
-    controller.tick.assert_not_called()
+    sequence.next.assert_not_called()
 
 if __name__ == '__main__':
     unittest.main()

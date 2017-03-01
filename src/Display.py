@@ -1,12 +1,13 @@
 import time
+from Logger import log
 
 class Display:
-  def __init__(self, characters, shiftRegistry):
+  def __init__(self, characters, listener):
     self._characters = characters
-    self._shiftRegistry = shiftRegistry
-    self._index = 0
+    self._listener = listener
     
   def show(self, message):
+    log("Showing: " + message)
     self.setTarget(message)
     self.run()
   
@@ -16,11 +17,11 @@ class Display:
       time.sleep(1) # TODO: remove, just to go slow for testing
       
   def tick(self):
-    if not self.hasFinished():
-      self._characters[self._index].tick()
-      self._index +=1
-      self._index %= len(self._characters)
-    self._shiftRegistry.publish()
+    log("Tick")
+    for char in self._characters:
+      if not char.hasFinished():
+        char.tick()
+    self._listener.publish()
 
   def setTarget(self, message):
     for i in range(0, len(self._characters)):
@@ -33,8 +34,5 @@ class Display:
   def getCurrentString(self):
     return "".join([elem.getCurrentLetter() for elem in self._characters])
 
-  def getCurrentIndex(self):
-    return self._index
-    
   def hasFinished(self):
     return all([elem.isReady() for elem in self._characters])
