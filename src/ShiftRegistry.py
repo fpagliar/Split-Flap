@@ -14,6 +14,7 @@ class SequenceManager:
     binaryRepresentation = sum(currentStatuses, [])
     pinRepresentation = [x == 1 for x in binaryRepresentation]
     self._registry.set(pinRepresentation)
+    # TODO: add the wait of 0.001 secs if necessary
 
 class _ShiftRegistry:
   def __init__(self, controller, length):

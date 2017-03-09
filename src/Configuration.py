@@ -5,10 +5,10 @@ def serializeCollection(name, iterable):
   return serializeValue(name, "|".join([str(elem) for elem in iterable]))
 
 def serializeValue(name, value):
-  return name + ": " + str(value) + "\n"
+  return str(name) + ": " + str(value) + "\n"
 
 def loadCollection(line, name, func=False):
-  prefix = name + ": "
+  prefix = str(name) + ": "
   if prefix in line:
     line = line[len(prefix):]
   tokens = line.split("|")
@@ -17,7 +17,7 @@ def loadCollection(line, name, func=False):
   return tokens
 
 def loadValue(line, name, func=False):
-  prefix = name + ": "
+  prefix = str(name) + ": "
   if prefix in line:
     line = line[len(prefix):]
   if func:
@@ -32,6 +32,7 @@ def defaultSystemConfiguration():
 
 def defaultSystemStatus():
   status = SystemStatus("system_status.config")
+  status.setDefaults()
   status.load()
   return status
 
@@ -60,8 +61,29 @@ class SystemConfiguration:
         [0, 0, 1, 0],
         [0, 0, 1, 1],
         [0, 0, 0, 1],
-      ]
+      ][::-1]
+    
     self._filename = filename
+    self._valueKeywords = [
+      Keywords.TICKS_PER_LETTER,
+      Keywords.NUMBER_OF_MOTORS,
+      Keywords.FEED_FILENAME,
+      Keywords.LOG_FILENAME,
+      Keywords.DATA_PIN,
+      Keywords.CLOCK_PIN,
+      Keywords.SHIFT_PIN ]
+    self._collectionKeywords = [ Keywords.CHARACTERS_ARRAY, Keywords.SEQUENCE_PINS ]
+    self._loadingFuncs = {
+      Keywords.TICKS_PER_LETTER : int,
+      Keywords.NUMBER_OF_MOTORS : int,
+      Keywords.FEED_FILENAME : str,
+      Keywords.LOG_FILENAME : str,
+      Keywords.DATA_PIN : int,
+      Keywords.CLOCK_PIN : int,
+      Keywords.SHIFT_PIN : int,
+      Keywords.CHARACTERS_ARRAY: str,
+      Keywords.SEQUENCE_PINS: int,
+      }
     
   def setDefaults(self):
     self.values = {
@@ -76,7 +98,7 @@ class SystemConfiguration:
 
     self.collections = {
         Keywords.CHARACTERS_ARRAY : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', ' ', ' ', ' '],
-        Keywords.SEQUENCE_PINS : [10, 11, 12, 13]
+        Keywords.SEQUENCE_PINS : [19, 5, 22, 17]
     }
   
   def get(self, key):
@@ -84,13 +106,16 @@ class SystemConfiguration:
       return self.values[key]
     else:
       return self.collections[key]  
+    
+  def setTicksPerLetter(self, value):
+    self.values[Keywords.TICKS_PER_LETTER] = value
   
   def save(self):
     with open(self._filename, "w+") as file:    
       file.truncate(0)
-      for key in self.values:
+      for key in self._valueKeywords:
         file.write(serializeValue(key, self.values[key]))
-      for key in self.collections:
+      for key in self._collectionKeywords:
         file.write(serializeCollection(key, self.collections[key]))
         
   def load(self):
@@ -98,11 +123,11 @@ class SystemConfiguration:
       with open(self._filename, "r+") as file:
         lines = [line.rstrip('\n') for line in file]
         i = 0
-        for key in self.values:
-          self.values[key] = loadValue(lines[i], key, int)
+        for key in self._valueKeywords:
+          self.values[key] = loadValue(lines[i], key, self._loadingFuncs[key])
           i = i + 1
-        for key in self.collections:
-          self.collections[key] = loadCollection(lines[i], key)
+        for key in self._collectionKeywords:
+          self.collections[key] = loadCollection(lines[i], key, self._loadingFuncs[key])
           i = i + 1
 
 class SystemStatus:
@@ -123,20 +148,21 @@ class SystemStatus:
         file.write(serializeValue(str(key) + self._keySeparator + self._ticksKey , value[self._ticksKey]))
         file.write(serializeValue(str(key) + self._keySeparator + self._indexKey , value[self._indexKey]))
         file.write(serializeValue(str(key) + self._keySeparator + self._sequenceKey , value[self._sequenceKey]))
-  
+          
   def cleanup(self):
     with open(self._filename, "w+") as file:
       file.truncate(0)
       
   def load(self):
-    with open(self._filename, "r+") as file:
-      for line in file:
-        motorId, rest = line.split(self._keySeparator)
-        motorId = int(motorId)
-        key, value = rest.split(":")
-        if motorId not in self._details:
-          self._details[motorId] = {}
-        self._details[motorId][key] = int(value)
+    if os.path.isfile(self._filename):
+      with open(self._filename, "r+") as file:
+        for line in file:
+          motorId, rest = line.split(self._keySeparator)
+          motorId = int(motorId)
+          key, value = rest.split(":")
+          if motorId not in self._details:
+            self._details[motorId] = {}
+          self._details[motorId][key] = int(value)
   
   def getCurrentTicks(self, motorId):
     return self._getDetail(motorId, self._ticksKey)

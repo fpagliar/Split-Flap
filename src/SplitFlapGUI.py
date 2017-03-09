@@ -49,7 +49,7 @@ class SplitFlapGUI:
       label.configure(text="0")
 
   def setupMultiplexor(self):
-    ttk.Label(self._mainframe, text="Multiplexor: ").grid(row=3, column=6, columnspan=3)
+    ttk.Label(self._mainframe, text="RoundRobinMotorSetup: ").grid(row=3, column=6, columnspan=3)
     self.createLabels(4, 7, 4, self._multiplexorPins, False, True)
     for label in self._multiplexorPins:
       label.configure(text="0")

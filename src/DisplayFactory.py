@@ -13,12 +13,16 @@ class DisplayFactory:
     self._config = configuration
     self._systemStatus = systemStatus
     
-  def buildCharacterTester(self):
+  def buildCharacterCalibrator(self):
     sequence = self._createMotorSequence(1)
-    character = Character(1, sequence, self._config, self._systemStatus)
     pinIds = self._config.get(Keywords.SEQUENCE_PINS)
     pins = self._createPinsFromIds(pinIds)
     connection = DirectConnection(pins, sequence)
+    return sequence, connection
+
+  def buildCharacterTester(self):
+    sequence, connection = self.buildCharacterCalibrator()
+    character = Character(1, sequence, self._config, self._systemStatus)
     return Display([character], connection)
     
   def _getPin(self, keyword):

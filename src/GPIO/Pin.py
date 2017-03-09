@@ -2,6 +2,8 @@ import RPi.GPIO as GPIO
 
 _pins = {}
 
+GPIO.setmode (GPIO.BCM)
+
 def GetPin(pinId):
   if pinId not in _pins:
     _pins[pinId] = _RaspyPin(pinId)

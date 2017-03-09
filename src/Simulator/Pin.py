@@ -2,7 +2,7 @@
 _textPins = {}
 _loggerPins = {}
 
-def GetTextPin(pinId):
+def GetPin(pinId):
   if pinId not in _textPins:
     _textPins[pinId] = _TextBasedPin(pinId)
   return _textPins[pinId]  
