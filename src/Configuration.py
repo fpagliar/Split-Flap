@@ -49,6 +49,8 @@ class Keywords(Enum):
     CLOCK_PIN = "CLOCK_PIN"
     SHIFT_PIN = "SHIFT_PIN"
     SEQUENCE_PINS = "SEQUENCE_PINS"
+    DEBUG_MODE = "DEBUG_MODE"
+    USE_TEXT_PINS = "USE_TEXT_PINS"
 
 class SystemConfiguration:
   def __init__(self, filename):
@@ -71,7 +73,10 @@ class SystemConfiguration:
       Keywords.LOG_FILENAME,
       Keywords.DATA_PIN,
       Keywords.CLOCK_PIN,
-      Keywords.SHIFT_PIN ]
+      Keywords.SHIFT_PIN,
+      Keywords.DEBUG_MODE,
+      Keywords.USE_TEXT_PINS,
+       ]
     self._collectionKeywords = [ Keywords.CHARACTERS_ARRAY, Keywords.SEQUENCE_PINS ]
     self._loadingFuncs = {
       Keywords.TICKS_PER_LETTER : int,
@@ -83,6 +88,8 @@ class SystemConfiguration:
       Keywords.SHIFT_PIN : int,
       Keywords.CHARACTERS_ARRAY: str,
       Keywords.SEQUENCE_PINS: int,
+      Keywords.DEBUG_MODE: bool,
+      Keywords.USE_TEXT_PINS: bool,
       }
     
   def setDefaults(self):
@@ -94,6 +101,8 @@ class SystemConfiguration:
       Keywords.DATA_PIN : 10,
       Keywords.CLOCK_PIN : 11,
       Keywords.SHIFT_PIN : 12,
+      Keywords.DEBUG_MODE: True,
+      Keywords.USE_TEXT_PINS: False,
     }
 
     self.collections = {
