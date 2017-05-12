@@ -1,10 +1,8 @@
 
+from Configuration import defaultSystemConfiguration, Keywords
 
-_isLogging = [False]
+_config = defaultSystemConfiguration()
 
-def debug():
-  _isLogging[0] = True
-
-def log(message):
-  if _isLogging[0]:
-    print(message)
+def log(tag, invoker, message):
+  if _config.get(Keywords.DEBUG_MODE) and invoker in _config.get(Keywords.LOGGER_TAGS):
+    print(invoker + "> " + message)

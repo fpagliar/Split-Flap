@@ -28,6 +28,8 @@ def defaultSystemConfiguration():
   config = SystemConfiguration("properties.config")
   config.setDefaults()
   config.load()
+  if not config.exists():
+      config.save()
   return config
 
 def defaultSystemStatus():
@@ -51,6 +53,8 @@ class Keywords(Enum):
     SEQUENCE_PINS = "SEQUENCE_PINS"
     DEBUG_MODE = "DEBUG_MODE"
     USE_TEXT_PINS = "USE_TEXT_PINS"
+    USE_DIRECT_CONNECTION = "USE_DIRECT_CONNECTION"
+    LOGGER_TAGS = "LOGGER_TAGS"
 
 class SystemConfiguration:
   def __init__(self, filename):
@@ -76,8 +80,9 @@ class SystemConfiguration:
       Keywords.SHIFT_PIN,
       Keywords.DEBUG_MODE,
       Keywords.USE_TEXT_PINS,
+      Keywords.USE_DIRECT_CONNECTION,
        ]
-    self._collectionKeywords = [ Keywords.CHARACTERS_ARRAY, Keywords.SEQUENCE_PINS ]
+    self._collectionKeywords = [ Keywords.CHARACTERS_ARRAY, Keywords.SEQUENCE_PINS, Keywords.LOGGER_TAGS ]
     self._loadingFuncs = {
       Keywords.TICKS_PER_LETTER : int,
       Keywords.NUMBER_OF_MOTORS : int,
@@ -90,6 +95,8 @@ class SystemConfiguration:
       Keywords.SEQUENCE_PINS: int,
       Keywords.DEBUG_MODE: bool,
       Keywords.USE_TEXT_PINS: bool,
+      Keywords.USE_DIRECT_CONNECTION: bool,
+      Keywords.LOGGER_TAGS: str,
       }
     
   def setDefaults(self):
@@ -103,11 +110,13 @@ class SystemConfiguration:
       Keywords.SHIFT_PIN : 12,
       Keywords.DEBUG_MODE: True,
       Keywords.USE_TEXT_PINS: False,
+      Keywords.USE_DIRECT_CONNECTION: False,
     }
 
     self.collections = {
         Keywords.CHARACTERS_ARRAY : ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '!', ' ', ' ', ' '],
-        Keywords.SEQUENCE_PINS : [19, 5, 22, 17]
+        Keywords.SEQUENCE_PINS : [19, 5, 22, 17],
+        Keywords.LOGGER_TAGS : [],        
     }
   
   def get(self, key):
@@ -127,6 +136,9 @@ class SystemConfiguration:
       for key in self._collectionKeywords:
         file.write(serializeCollection(key, self.collections[key]))
         
+  def exists(self):
+    return os.path.isfile(self._filename)
+
   def load(self):
     if os.path.isfile(self._filename):
       with open(self._filename, "r+") as file:
@@ -150,6 +162,10 @@ class SystemStatus:
   
   def set(self, motorId, currentTicks, currentLetterIndex, sequenceIndex):
     self._details[motorId] = { self._ticksKey: currentTicks, self._indexKey: currentLetterIndex, self._sequenceKey: sequenceIndex }
+
+  def setDefaults(self):
+      for index in range(10):
+        self.set(index, 0, 0, 0)
   
   def save(self):
     with open(self._filename, "w+") as file:
@@ -161,6 +177,9 @@ class SystemStatus:
   def cleanup(self):
     with open(self._filename, "w+") as file:
       file.truncate(0)
+
+  def exists(self):
+    return os.path.isfile(self._filename)
       
   def load(self):
     if os.path.isfile(self._filename):

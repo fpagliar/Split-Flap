@@ -1,5 +1,9 @@
 from queue import Queue
 
+
+# This class will manage the timing logic around displaying messages. 
+# It is created based on a feed that will provide the content of the message, and a display that will show it
+# Internally, it will decide how to split that message into chunks, and when to switch to the next chunk/message
 class MessageRequester:
   def __init__(self, timer, feed, logger, display):
     self._timer = timer

@@ -1,15 +1,22 @@
 from Logger import log
 
+_sequenceId = [1]
+
+# This class represents the sequence on a stepper motor.
+# The constructor gets the sequence that is configured for this specific type of motor, and provides methods 
+# to navigate with it.
 class MotorSequence:
   def __init__(self, sequence, currentIndex=0):
     self._sequence = sequence
     self._currentIndex = currentIndex
-    log("Creating motor sequence with index:" + str(self._currentIndex))
+    self._id = _sequenceId[0]
+    _sequenceId[0] = _sequenceId[0] + 1
+    log(MotorSequence.__name__, "Motor Sequence #" + str(self._id), "Creating motor sequence with index:" + str(self._currentIndex))
     
   def next(self):
     self._currentIndex += 1
     self._currentIndex %= len(self._sequence)
-    log("Moving the sequence to step:" + str(self._currentIndex))
+    log(MotorSequence.__name__, "Motor Sequence #" + str(self._id), "Moving the sequence to step:" + str(self._currentIndex))
         
   def current(self):
     return self._sequence[self._currentIndex]

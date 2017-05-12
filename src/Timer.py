@@ -2,6 +2,7 @@ import time
 import random
 from datetime import datetime
 
+# Class used to wait for different time-constraint events
 class Timer:
   def __init__(self):
     self._registryClockPulseWait = 0.01
@@ -37,3 +38,23 @@ class Timer:
   def isAcceptableTimeForMessages(self):
     now = datetime.now()
     return now.hour > self.morningStartTime and now.hour < self.nightStopTime
+
+# from datetime import datetime
+# import time
+# 
+# _registered = {}
+# _lastHits = {}
+# 
+# def register(keyword, seconds):
+#   _registered[keyword] = seconds
+#   _lastHits[keyword] = datetime.now()
+# 
+# def waitFor(keyword):
+#   if keyword not in _registered:
+#     raise Exception("Invalid clock keyword:" + keyword)
+# 
+#   now = datetime.now()
+#   seconds = _registered[keyword]
+#   if _lastHits[keyword] + seconds < now:
+#     time.sleep(seconds)
+#   _lastHits[keyword] = now

@@ -5,9 +5,10 @@ config = defaultSystemConfiguration()
 _textPins = {}
 _loggerPins = {}
 
-if not config.get(Keywords.USE_TEXT_PINS):
-  import RPi.GPIO as GPIO
+# if not config.get(Keywords.USE_TEXT_PINS):
+#   import RPi.GPIO as GPIO
 
+# Main interface method that provides the correct pin instance to the context that requires it.
 def GetPin(pinId):
   if pinId not in _textPins:
     if config.get(Keywords.USE_TEXT_PINS):
@@ -37,6 +38,7 @@ class _LoggerPin:
   def off(self):
     self.set(False)
 
+# Simulates a pin with the same interface, but in practice just logs the values to the console
 class _TextBasedPin:
   def __init__(self, pinNumber):
     self.id = pinNumber
@@ -44,9 +46,11 @@ class _TextBasedPin:
     
   def set(self, active):
     if active:
-      print(str(self.id) + " Activated")
+      pass
+      #print(str(self.id) + " Activated")
     else:
-      print(str(self.id) + " Deactivated")
+      pass
+      #print(str(self.id) + " Deactivated")
     
   def on(self):
     self.set(True)
@@ -57,6 +61,7 @@ class _TextBasedPin:
   def __str__(self):
     return str(self.id)
 
+# Represents a raspberry pi pin that will offer a simple interface to manipulate it
 class _RaspyPin:
   def __init__(self, pinNumber):
     self.id = pinNumber
