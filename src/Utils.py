@@ -1,8 +1,8 @@
 import signal
 
-def askForConfirmation(message, timeout = False):
-  if timeout:
-      answer = _getTimedInput(message, 1)
+def askForConfirmation(message, wait = 0):
+  if wait > 0:
+      answer = _getTimedInput(message, wait)
   else:
       answer = input(message + " (y/N): ")
   return answer and (answer[0] == "Y" or answer[0] == "y")
