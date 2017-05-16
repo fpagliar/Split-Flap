@@ -70,6 +70,7 @@ class SystemConfiguration:
 
   def __init__(self):
     self._config = ConfigurationFile(SystemConfiguration.filename)
+    self._load()
     self.MOTOR_SEQUENCE = [
         [1, 0, 0, 1],
         [1, 0, 0, 0],
@@ -81,10 +82,7 @@ class SystemConfiguration:
         [0, 0, 0, 1],
       ][::-1]
 
-  def save(self):
-    self._config.save()
-
-  def load(self):
+  def _load(self):
     loaderMap = {
       _SystemKeywords.NUMBER_OF_MOTORS : int,
       _SystemKeywords.DATA_PIN : int,
@@ -98,6 +96,9 @@ class SystemConfiguration:
       _SystemKeywords.ALPHABET: str,
     }
     self._config.load(loaderMap)
+
+  def save(self):
+    self._config.save()
 
   def _get(self, keyword):
     return self._config.get(keyword)
@@ -132,9 +133,9 @@ class SystemConfiguration:
     else:
       return False
 
-  def loggerTags(self):
+  def shouldLog(self, tag):
     if self.isDebugMode():
-      return self._get(_SystemKeywords.LOGGER_TAGS)
+      return tag in self._get(_SystemKeywords.LOGGER_TAGS)
     else:
       return []
 
@@ -159,7 +160,7 @@ class MotorConfigurationFile:
 
   def load(self, keyFunctionMap):
     loaderMap = { }
-    for i in range(1, self._numberOfMotors):
+    for i in range(1, self._numberOfMotors + 1):
       for key in keyFunctionMap:
         loaderMap[self._getKey(i, key)] = keyFunctionMap[key]
     self._config.load(loaderMap)
@@ -168,7 +169,7 @@ class MotorConfigurationFile:
     return self._config.get(self._getKey(motorId, key))
 
   def set(self, motorId, key, value):
-    if motorId not in range(1, self._numberOfMotors):
+    if motorId not in range(1, self._numberOfMotors + 1):
       raise Exception("Invalid motor id: " + str(motorId))
     self._config.set(self._getKey(motorId, key), value)
 
