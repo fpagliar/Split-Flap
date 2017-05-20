@@ -2,7 +2,7 @@ from DisplayFactory import DisplayFactory
 from Logger import log
 import Utils
 import time
-from Configuration import SystemConfiguration, SystemCalibration, SystemStatus
+from Configuration import SystemCalibration, SystemStatus
 
 # This class takes care of the calibration of each character.
 # calibrateInitialPosition will help us set the start position of the system. This is the way the program will be able to
@@ -11,12 +11,12 @@ from Configuration import SystemConfiguration, SystemCalibration, SystemStatus
 # The other part is calibrateTicksPerLetter, and this will save which is the composition of the characters and the physical system
 # and will be saved and shouldn't be run again unless you change/replace a character.
 class Calibrator:
-  def __init__(self, pinBuilder):
+  def __init__(self, pinBuilder, config):
     self._pinBuilder = pinBuilder
-    self._config = SystemConfiguration()
+    self._config = config
 
   def infiniteRun(self):
-    controller = _CalibratorCharacter(self._pinBuilder, 1)
+    controller = _CalibratorCharacter(self._pinBuilder, 1, self._config)
     while True:
       controller.tick()
       time.sleep(0.001)
@@ -24,7 +24,7 @@ class Calibrator:
   def calibrateTicksPerLetter(self):
     self.calibrateInitialPosition()
     numberOfMotors = self._config.numberOfMotors()
-    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors)
+    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config)
     calibration = SystemCalibration()
     alphabet = self._config.alphabet()
 
@@ -43,7 +43,7 @@ class Calibrator:
 
   def calibrateInitialPosition(self):
     numberOfMotors = self._config.numberOfMotors()
-    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors)
+    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config)
     systemStatus = SystemStatus()
     systemStatus.cleanup()
     target = self._config.alphabet()[0]
@@ -59,8 +59,8 @@ class Calibrator:
     print("Great, now the split-flap is correctly configured")
 
 class _CalibratorCharacter:
-  def __init__(self, pinBuilder, quantity):
-    factory = DisplayFactory(pinBuilder, SystemConfiguration(), SystemStatus())
+  def __init__(self, pinBuilder, quantity, config):
+    factory = DisplayFactory(pinBuilder, config, SystemStatus(quantity))
     self._sequences, self._connection = factory.buildCharacterCalibrator(quantity)
 
   def getSequences(self):
