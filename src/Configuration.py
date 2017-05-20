@@ -46,7 +46,9 @@ class ConfigurationFile:
     collectionSeparator = ConfigurationFile._collectionSeparator
     if keySeparator in strippedLine:
       key = strippedLine.split(keySeparator)[0]
-      value = (strippedLine[len(key + 1):])
+      if key not in loaderMap:
+        raise Exception("Invalid key found in file: " + str(key))
+      value = (strippedLine[len(key) + 1:])
       if collectionSeparator in value:
         tokens = value.split(collectionSeparator)
         self._mappings[key] = [loaderMap[key](elem) for elem in tokens]
@@ -65,11 +67,17 @@ class _SystemKeywords(Enum):
     LOGGER_TAGS = "LOGGER_TAGS"
     ALPHABET = "ALPHABET"
 
+    def __str__(self):
+        return str(self.value)
+
+def str2bool(v):
+  return v.strip().lower() in ("yes", "true", "t", "1")
+
 class SystemConfiguration:
   _fileName = "system.config"
 
   def __init__(self):
-    self._config = ConfigurationFile(SystemConfiguration.filename)
+    self._config = ConfigurationFile(SystemConfiguration._fileName)
     self._load()
     self.MOTOR_SEQUENCE = [
         [1, 0, 0, 1],
@@ -89,19 +97,21 @@ class SystemConfiguration:
       _SystemKeywords.CLOCK_PIN : int,
       _SystemKeywords.SHIFT_PIN : int,
       _SystemKeywords.SEQUENCE_PINS: int,
-      _SystemKeywords.DEBUG_MODE: bool,
-      _SystemKeywords.USE_TEXT_PINS: bool,
-      _SystemKeywords.USE_DIRECT_CONNECTION: bool,
+      _SystemKeywords.DEBUG_MODE: str2bool,
+      _SystemKeywords.USE_TEXT_PINS: str2bool,
+      _SystemKeywords.USE_DIRECT_CONNECTION: str2bool,
       _SystemKeywords.LOGGER_TAGS: str,
       _SystemKeywords.ALPHABET: str,
     }
+
+    loaderMap = dict((str(key), val) for key, val in loaderMap.items())
     self._config.load(loaderMap)
 
   def save(self):
     self._config.save()
 
   def _get(self, keyword):
-    return self._config.get(keyword)
+    return self._config.get(str(keyword))
 
   def numberOfMotors(self):
     return self._get(_SystemKeywords.NUMBER_OF_MOTORS)
