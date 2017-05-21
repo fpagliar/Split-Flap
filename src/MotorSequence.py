@@ -8,18 +8,22 @@ class MotorSequence:
     self._sequence = sequence
     self._currentIndex = currentIndex
     self._id = id
-    log(MotorSequence.__name__, "Motor Sequence #" + str(self._id), "Creating motor sequence with index:" + str(self._currentIndex))
+    log(self, "Creating motor sequence with index:" + str(self._currentIndex))
 
   def next(self):
     self._currentIndex += 1
     self._currentIndex %= len(self._sequence)
-    log(MotorSequence.__name__, "Motor Sequence #" + str(self._id), "Moving the sequence to step:" + str(self._currentIndex))
+    log(self, "Moving the sequence to step:" + str(self._currentIndex))
 
   def current(self):
     return self._sequence[self._currentIndex]
 
-  def _currentIndex(self):
+  # TODO: replace by populating into the status
+  def currentIndex(self):
     return self._currentIndex
 
+  def logId(self):
+    return "Motor Sequence #" + str(self._id)
+
   def __str__(self):
-    return str(self._currentIndex()) + ": " + str(self.current())
+    return str(self._currentIndex) + ": " + str(self.current())

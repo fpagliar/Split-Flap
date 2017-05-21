@@ -17,11 +17,11 @@ class ConfigurationFile:
     self._mappings[keyword] = value
 
   def cleanup(self):
-    with open(self._filename, "w+") as file:
+    with open(self._fileName, "w+") as file:
       file.truncate(0)
 
   def save(self):
-    with open(self._filename, "w+") as file:
+    with open(self._fileName, "w+") as file:
       file.truncate(0)
       for key in self._mappings:
         file.write(self._serialize(key, self._mappings[key]))
@@ -190,10 +190,15 @@ class SystemStatus:
 
   def __init__(self, numberOfMotors):
     self._config = MotorConfigurationFile(SystemStatus._fileName, numberOfMotors)
+    self._numberOfMotors = numberOfMotors
+
+  def default(self):
+    for i in range(1, self._numberOfMotors + 1):
+      self.set(i, 0, 0)
 
   def set(self, motorId, currentTicks, sequenceIndex):
-    self._config.set(SystemStatus._ticksKey, currentTicks)
-    self._config.set(SystemStatus._sequenceKey, sequenceIndex)
+    self._config.set(motorId, SystemStatus._ticksKey, currentTicks)
+    self._config.set(motorId, SystemStatus._sequenceKey, sequenceIndex)
 
   def ticks(self, motorId):
     return self._config.get(motorId, SystemStatus._ticksKey)

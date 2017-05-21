@@ -7,6 +7,7 @@ _loggerPins = {}
 
 if not config.shouldUseTextPins():
   import RPi.GPIO as GPIO
+  GPIO.setmode(GPIO.BCM)
 
 # Main interface method that provides the correct pin instance to the context that requires it.
 def GetPin(pinId):

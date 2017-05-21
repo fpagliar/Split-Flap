@@ -6,7 +6,9 @@ from DisplayFactory import DisplayFactory
 from Configuration import SystemConfiguration, SystemStatus
 import re
 
-option = sys.argv[1]
+option = None
+if len(sys.argv) > 1:
+  option = sys.argv[1]
 config = SystemConfiguration()
 
 if option == "--position":
@@ -28,7 +30,7 @@ elif option == "--character":
         display.show(char)
         time.sleep(5)
 elif option == "--infinite":
-    calibrator = Calibrator(Pin.GetPin)
+    calibrator = Calibrator(Pin.GetPin, config)
     calibrator.infiniteRun()
 elif option == "--shift-registry":
     length = 0
@@ -47,6 +49,5 @@ elif option == "--shift-registry":
         registry.set(binary)
 
 else:
-    raise Exception("Invalid option")
-
+  print("Valid options: \n \t --position \n \t --ticks \n \t --message \n \t --show \n \t --character \n \t --infinite \n \t --shift-registry \n")
 

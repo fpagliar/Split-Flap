@@ -16,15 +16,18 @@ class Calibrator:
     self._config = config
 
   def infiniteRun(self):
-    controller = _CalibratorCharacter(self._pinBuilder, 1, self._config)
+    numberOfMotors = self._config.numberOfMotors()
+    systemStatus = SystemStatus(numberOfMotors)
+    systemStatus.default()
+    controller = _CalibratorCharacter(self._pinBuilder, 1, self._config, systemStatus)
     while True:
-      controller.tick()
-      time.sleep(0.001)
+      controller.tick(0)
+      time.sleep(0.005)
 
   def calibrateTicksPerLetter(self):
     self.calibrateInitialPosition()
     numberOfMotors = self._config.numberOfMotors()
-    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config)
+    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config, SystemStatus(numberOfMotors))
     calibration = SystemCalibration()
     alphabet = self._config.alphabet()
 
@@ -33,7 +36,7 @@ class Calibrator:
       ticksConfiguration = []
       ticks = 0
       for letter in alphabet[:1]:  # We start with A showing, so the next letter should be the first target
-        while not Utils.askForConfirmation("Is it showing character " + letter + "?", 0.5):
+        while not Utils.askForConfirmation("Is it showing character " + letter + "?", 500):
           controller.tick(i - 1)
           ticks = ticks + 1
         ticksConfiguration.append(ticks)
@@ -43,24 +46,25 @@ class Calibrator:
 
   def calibrateInitialPosition(self):
     numberOfMotors = self._config.numberOfMotors()
-    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config)
-    systemStatus = SystemStatus()
+    systemStatus = SystemStatus(numberOfMotors)
+    systemStatus.default()
+    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config, systemStatus)
     systemStatus.cleanup()
     target = self._config.alphabet()[0]
 
     for i in range (1, numberOfMotors + 1):
       print("Now configuring the character " + str(i))
-      while not Utils.askForConfirmation("Is it close to " + target + "?", 0.05):
+      while not Utils.askForConfirmation("Is it close to " + target + "?", 500):
         controller.tick(i - 1)
-      while not Utils.askForConfirmation("Is it showing letter " + target + "?", 0.5):
+      while not Utils.askForConfirmation("Is it showing letter " + target + "?", 500):
         controller.tick(i - 1)
-      systemStatus.set(i, 0, controller.getSequence().currentIndex())
+      systemStatus.set(i, 0, controller.getSequences()[i - 1].currentIndex())
     systemStatus.save()
     print("Great, now the split-flap is correctly configured")
 
 class _CalibratorCharacter:
-  def __init__(self, pinBuilder, quantity, config):
-    factory = DisplayFactory(pinBuilder, config, SystemStatus(quantity))
+  def __init__(self, pinBuilder, quantity, config, status):
+    factory = DisplayFactory(pinBuilder, config, status)
     self._sequences, self._connection = factory.buildCharacterCalibrator(quantity)
 
   def getSequences(self):
