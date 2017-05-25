@@ -5,9 +5,9 @@ from Logger import log
 # It receives the characters (that are a logical representation of what the physical one is showing) and a listener
 # that will take care of the logic of how to publish the current system state.
 class Display:
-  def __init__(self, characters, listener):
+  def __init__(self, characters, publisher):
     self._characters = characters
-    self._listener = listener
+    self._publisher = publisher
 
   def show(self, message):
     log(self, "Showing: " + message)
@@ -16,15 +16,15 @@ class Display:
 
   def run(self):
     while not self.hasFinished():
-      self.tick()
+      self._tick()
       time.sleep(1)  # TODO: remove, just to go slow for testing
 
-  def tick(self):
+  def _tick(self):
     log(self, "Tick")
     for char in self._characters:
       if not char.hasFinished():
         char.tick()
-    self._listener.publish()
+    self._publisher.publish()
 
   def setTarget(self, message):
     log(self, "Setting target: " + message)

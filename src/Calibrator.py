@@ -19,34 +19,41 @@ class Calibrator:
     numberOfMotors = self._config.numberOfMotors()
     systemStatus = SystemStatus(numberOfMotors)
     systemStatus.default()
-    controller = _CalibratorCharacter(self._pinBuilder, 1, self._config, systemStatus)
+    controller = _CalibratorSequencePublisher(self._pinBuilder, 1, self._config, systemStatus)
     while True:
       controller.tick(0)
       time.sleep(0.005)
 
   def calibrateTicksPerLetter(self):
     self.calibrateInitialPosition()
-    numberOfMotors = self._config.numberOfMotors()
-    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config, SystemStatus(numberOfMotors))
-    calibration = SystemCalibration()
-    alphabet = self._config.alphabet()
 
-    for i in range (1, numberOfMotors + 1):
-      print("Now calibrating the character " + str(i))
-      ticksConfiguration = []
-      ticks = 0
-      for letter in alphabet[:1]:  # We start with A showing, so the next letter should be the first target
-        ticks = ticks + self._moveUntilInterrupted(controller, i - 1, "Is it showing character " + letter + "?", 0.5)
-        ticksConfiguration.append(ticks)
-      calibration.set(i, ticksConfiguration)
+    numberOfMotors = self._config.numberOfMotors()
+    characters, publisher = DisplayFactory(self._pinBuilder, self._config).buildCharacters(SystemStatus(numberOfMotors))
+    calibration = SystemCalibration()
+
+    # Create alphabet
+    alphabet = self._config.alphabet()
+    # Appending the first letter on the end, so that we calibrate the change from the last letter to the first one.
+    alphabet.append(alphabet[0])
+
+    for i in range(1, len(characters) + 1):
+      if Utils.askForConfirmation("Do you want to calibrate character: " + str(i)):
+        character = characters[i - 1]
+        print("Now calibrating the character " + str(i))
+        ticksConfiguration = []
+        ticks = 0
+        for letter in alphabet[:1]:  # We start with A showing, so the next letter should be the first target
+          ticks = ticks + self._moveUntilInterrupted(_CharacterPublisher(character, publisher), i - 1 , "Is it showing character " + letter + "?", 0.5)
+          ticksConfiguration.append(ticks)
+        calibration.set(i - 1, ticksConfiguration)
     print("Great, calibration ended")
     calibration.save()
 
   def calibrateInitialPosition(self):
     numberOfMotors = self._config.numberOfMotors()
+    controller = _CalibratorSequencePublisher(self._pinBuilder, numberOfMotors, self._config)
     systemStatus = SystemStatus(numberOfMotors)
     systemStatus.default()
-    controller = _CalibratorCharacter(self._pinBuilder, numberOfMotors, self._config, systemStatus)
     systemStatus.cleanup()
     target = self._config.alphabet()[0]
 
@@ -55,7 +62,7 @@ class Calibrator:
       self._moveUntilInterrupted(controller, i - 1, "Is it close to " + target + "?", 0.05)
       self._moveUntilInterrupted(controller, i - 1, "Is it showing letter " + target + "?", 0.5)
       systemStatus.set(i, 0, controller.getSequences()[i - 1].currentIndex())
-    print("Great, now the split-flap is correctly configured")
+    print("Great, now the split-flap start position is correctly configured")
 
   def _moveUntilInterrupted(self, controller, motorId, message, wait):
     print(message)
@@ -70,9 +77,18 @@ class Calibrator:
       pass
     return ticks
 
-class _CalibratorCharacter:
-  def __init__(self, pinBuilder, quantity, config, status):
-    factory = DisplayFactory(pinBuilder, config, status)
+class _CharacterPublisher:
+  def __init__(self, character, publisher):
+    self._character = character
+    self._pubisher = publisher
+
+  def tick(self, index):
+    self._character.tick()
+    self._punlisher.publish()
+
+class _CalibratorSequencePublisher:
+  def __init__(self, pinBuilder, quantity, config):
+    factory = DisplayFactory(pinBuilder, config)
     self._sequences, self._connection = factory.buildCharacterCalibrator(quantity)
 
   def getSequences(self):
