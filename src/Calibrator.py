@@ -36,9 +36,7 @@ class Calibrator:
       ticksConfiguration = []
       ticks = 0
       for letter in alphabet[:1]:  # We start with A showing, so the next letter should be the first target
-        while not Utils.askForConfirmation("Is it showing character " + letter + "?", 500):
-          controller.tick(i - 1)
-          ticks = ticks + 1
+        ticks = ticks + self._moveUntilInterrupted(controller, i - 1, "Is it showing character " + letter + "?", 0.5)
         ticksConfiguration.append(ticks)
       calibration.set(i, ticksConfiguration)
     print("Great, calibration ended")
@@ -54,13 +52,23 @@ class Calibrator:
 
     for i in range (1, numberOfMotors + 1):
       print("Now configuring the character " + str(i))
-      while not Utils.askForConfirmation("Is it close to " + target + "?", 500):
-        controller.tick(i - 1)
-      while not Utils.askForConfirmation("Is it showing letter " + target + "?", 500):
-        controller.tick(i - 1)
+      self._moveUntilInterrupted(controller, i - 1, "Is it close to " + target + "?", 0.05)
+      self._moveUntilInterrupted(controller, i - 1, "Is it showing letter " + target + "?", 0.5)
       systemStatus.set(i, 0, controller.getSequences()[i - 1].currentIndex())
-    systemStatus.save()
     print("Great, now the split-flap is correctly configured")
+
+  def _moveUntilInterrupted(self, controller, motorId, message, wait):
+    print(message)
+    ticks = 0
+    # Will run until it hears the interruption
+    try:
+      while True:
+        controller.tick(motorId)
+        ticks = ticks + 1
+        time.sleep(wait)
+    except KeyboardInterrupt:
+      pass
+    return ticks
 
 class _CalibratorCharacter:
   def __init__(self, pinBuilder, quantity, config, status):
