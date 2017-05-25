@@ -11,30 +11,40 @@ from Logger import log
 #                     In order to move for it, we should increment the sequence on the motor, and make update the logic on the character to match it.
 
 class Character:
-  def __init__(self, motorId, motorSequence, characterSequence, systemStatus):
+  def __init__(self, motorId, motorSequence, characterSequence):
     log(self, "Creating character with id: " + str(motorId))
     self._motorId = motorId
     self._motorSequence = motorSequence
     self._characterSequence = characterSequence
-    self._systemStatus = systemStatus
     self._targetLetter = 'A'
+    self._listeners = []
+
+  def registerListener(self, statusListener):
+    self._listeners.append(statusListener)
+
+  def _publishStatus(self):
+    self._informListeners(lambda l :
+                          self._motorSequence.inform(lambda x:
+                                                     l.set(self._motorId, self._currentTicks, self._currentLetterIndex, x)))
+
+  def _clearStatus(self):
+    self._informListeners(lambda x : x.cleanup())
+
+  def _informListeners(self, informingFunction):
+    for listener in self._listeners:
+      informingFunction(listener)
 
   def tick(self):
     log(self, " Tick")
     if not self.hasFinished():
       # Cleanup the old status before executing the change
-      self._systemStatus.cleanup()
+      self._clearStatus()
       # Increment the number of ticks in this letter
       self._characterSequence.next()
       # Move the motor sequence
       self._motorSequence.next()
       # Update the current system status
-      self._systemStatus.set(self._motorId, self._currentTicks, self._currentLetterIndex,
-                             self._motorSequence.currentIndex())
-      # Write the new system status. If there is a failure/program is killed between the cleanup and
-      # the save, we lose the status, but that is OK since it wouldn't be possible to figure out if the call
-      # was executed successfully or not.
-      self._systemStatus.save()
+      self._publishStatus()
 
   def hasFinished(self):
     return self._characterSequence.isMatching(self._targetLetter)
@@ -47,7 +57,6 @@ class Character:
 
   def _getCurrentLetter(self):
     return self._characterSequence.getValue()
-#     return self._configuration.get(Keywords.CHARACTERS_ARRAY)[self._currentLetterIndex]
 
   def _setNextLetter(self):
     self._characterSequence.next()

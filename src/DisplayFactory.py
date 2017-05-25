@@ -7,10 +7,9 @@ from Logger import log
 
 # This class is a factory to produce the different types of displays based on the configuration provided.
 class DisplayFactory:
-  def __init__(self, pinBuilder, configuration, systemStatus):
+  def __init__(self, pinBuilder, configuration):
     self._pinBuilder = pinBuilder
     self._config = configuration
-    self._systemStatus = systemStatus
 
   def buildCharacterCalibrator(self, quantity):
     sequences = [self._createMotorSequence(i + 1) for i in range(quantity)]
@@ -18,10 +17,11 @@ class DisplayFactory:
     publisher = SequencePublisher(sequences, connection)
     return sequences, publisher
 
-  def buildCharacterTester(self):
+  def buildCharacterTester(self, systemStatus):
     sequence, connection = self.buildCharacterCalibrator()
     publisher = SequencePublisher([sequence], connection)
-    character = Character(1, sequence, self._config, self._systemStatus)
+    character = Character(1, sequence, self._config)
+    character.registerListener(systemStatus)
     return Display([character], publisher)
 
   def buildShiftRegistry(self, length):
@@ -32,11 +32,13 @@ class DisplayFactory:
   def _getPin(self, keyword):
     return self._pinBuilder(self._config.get(keyword))
 
-  def build(self):
+  def build(self, systemStatus):
     numberOfMotors = self._config.numberOfMotors()
     sequences = [self._createMotorSequence(i + 1) for i in range(numberOfMotors)]
     connection = buildConnection(self._config, self._pinBuilder, numberOfMotors, Timer())
     characters = [Character(motorId + 1, sequences[motorId], self._config, self._systemStatus) for motorId in range(numberOfMotors)]
+    for character in characters:
+      character.registerListener(systemStatus)
     return Display(characters, SequencePublisher(sequences, connection))
 
   def _createMotorSequence(self, motorId):

@@ -6,6 +6,14 @@ from DisplayFactory import DisplayFactory
 from Configuration import SystemConfiguration, SystemStatus
 import re
 
+# TODO:
+# 1 - Turn the System Status into a listener service
+# 2 - Make the sequence publish itself instead of leaking private data
+# 3 - Make character show the middle of the array instead of the first letter
+# 4 - Calibrate individual characters
+# 5 - Calibrate letter A / last letter
+# 6 - Fix the timeouted input
+
 option = None
 if len(sys.argv) > 1:
   option = sys.argv[1]
@@ -18,14 +26,14 @@ elif option == "--ticks":
     calibrator = Calibrator(Pin.GetPin, config)
     calibrator.calibrateTicksPerLetter()
 elif option == "--message":
-    display = DisplayFactory(Pin.GetPin, config, SystemStatus(config.numberOfMotors())).build()
+    display = DisplayFactory(Pin.GetPin, config).build(SystemStatus(config.numberOfMotors()))
     display.show(sys.argv[2])
 elif option == "--show":
-    display = DisplayFactory(Pin.GetPin, config, SystemStatus(config.numberOfMotors())).buildCharacterTester()
+    display = DisplayFactory(Pin.GetPin, config).buildCharacterTester(SystemStatus(config.numberOfMotors()))
     while True:
         display.show(input("What do you want to show next?"))
 elif option == "--character":
-    display = DisplayFactory(Pin.GetPin, config, SystemStatus(config.numberOfMotors())).buildCharacterTester()
+    display = DisplayFactory(Pin.GetPin, config).buildCharacterTester(SystemStatus(config.numberOfMotors()))
     for char in config.alphabet():
         display.show(char)
         time.sleep(5)
@@ -38,7 +46,7 @@ elif option == "--shift-registry":
       answer = input("Enter the desired length of the shift registry: ")
       if answer.isdigit():
         length = int(answer)
-    registry = DisplayFactory(Pin.GetPin, config, SystemStatus(length)).buildShiftRegistry(length)
+    registry = DisplayFactory(Pin.GetPin, config).buildShiftRegistry(length)
     regex = re.compile("[01]{" + str(length) + "}")
     while True:
       pattern = input("What do you want to show?")

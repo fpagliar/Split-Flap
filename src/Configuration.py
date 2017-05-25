@@ -182,6 +182,7 @@ class MotorConfigurationFile:
     if motorId not in range(1, self._numberOfMotors + 1):
       raise Exception("Invalid motor id: " + str(motorId))
     self._config.set(self._getKey(motorId, key), value)
+    self.save()
 
 class SystemStatus:
   _fileName = "system.status"

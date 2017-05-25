@@ -18,9 +18,8 @@ class MotorSequence:
   def current(self):
     return self._sequence[self._currentIndex]
 
-  # TODO: replace by populating into the status
-  def currentIndex(self):
-    return self._currentIndex
+  def inform(self, listener):
+    listener(self._currentIndex)
 
   def logId(self):
     return "Motor Sequence #" + str(self._id)
