@@ -224,7 +224,7 @@ class SystemCalibration:
     self._config = MotorConfigurationFile(SystemStatus._fileName, numberOfMotors)
 
   def set(self, motorId, ticksConfiguration):
-    self._config.set(SystemCalibration._key, ticksConfiguration)
+    self._config.set(motorId, SystemCalibration._key, ticksConfiguration)
 
   def ticksConfiguration(self, motorId):
     return self._config.get(motorId, SystemCalibration._key)

@@ -21,7 +21,7 @@ class DisplayFactory:
     return MotorSequence(motorId, self._config.MOTOR_SEQUENCE, sequenceIndex)
 
   def buildCharacterCalibrator(self, quantity):
-    sequences = [self._createMotorSequence(i + 1) for i in range(quantity)]
+    sequences = [self._createMotorSequence(i + 1, 0) for i in range(quantity)]
     connection = buildConnection(self._config, self._pinBuilder, quantity, Timer())
     publisher = SequencePublisher(sequences, connection)
     return sequences, publisher
@@ -39,7 +39,7 @@ class DisplayFactory:
     numberOfMotors = self._config.numberOfMotors()
     sequences = [self._createMotorSequence(i + 1, systemStatus.sequence(i + 1)) for i in range(numberOfMotors)]
     connection = buildConnection(self._config, self._pinBuilder, numberOfMotors, Timer())
-    characters = [Character(motorId + 1, sequences[motorId], self._config, self._systemStatus) for motorId in range(numberOfMotors)]
+    characters = [Character(motorId + 1, sequences[motorId], self._config) for motorId in range(numberOfMotors)]
     for character in characters:
       character.registerListener(systemStatus)
     return characters, SequencePublisher(sequences, connection)
