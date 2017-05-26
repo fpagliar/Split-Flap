@@ -8,6 +8,7 @@ import re
 
 # TODO:
 # 3 - Make character show the middle of the array instead of the first letter
+# 8 - Fix the building of the standard display by using the calibration file
 
 option = None
 if len(sys.argv) > 1:

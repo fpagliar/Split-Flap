@@ -41,7 +41,7 @@ class Calibrator:
         print("Now calibrating the character " + str(i))
         ticksConfiguration = []
         ticks = 0
-        for letter in alphabet[:1]:  # We start with A showing, so the next letter should be the first target
+        for letter in alphabet[1:]:  # We start with A showing, so the next letter should be the first target
           ticks = ticks + self._moveUntilInterrupted(_CharacterPublisher(character, publisher), i - 1 , "Is it showing character " + letter + "?", 1)
           ticksConfiguration.append(ticks)
         calibration.set(i, ticksConfiguration)
@@ -80,11 +80,11 @@ class Calibrator:
 class _CharacterPublisher:
   def __init__(self, character, publisher):
     self._character = character
-    self._pubisher = publisher
+    self._publisher = publisher
 
   def tick(self, index):
     self._character.tick()
-    self._punlisher.publish()
+    self._publisher.publish()
 
 class _CalibratorSequencePublisher:
   def __init__(self, pinBuilder, quantity, config):

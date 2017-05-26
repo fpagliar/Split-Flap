@@ -221,7 +221,7 @@ class SystemCalibration:
   _key = "LETTER_CHANGES"
 
   def __init__(self, numberOfMotors):
-    self._config = MotorConfigurationFile(SystemStatus._fileName, numberOfMotors)
+    self._config = MotorConfigurationFile(SystemCalibration._fileName, numberOfMotors)
 
   def set(self, motorId, ticksConfiguration):
     self._config.set(motorId, SystemCalibration._key, ticksConfiguration)

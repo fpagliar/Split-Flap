@@ -23,9 +23,8 @@ class Character:
     self._listeners.append(statusListener)
 
   def _publishStatus(self):
-    self._informListeners(lambda l :
-                          self._motorSequence.inform(lambda x:
-                                                     l.set(self._motorId, self._currentTicks, self._currentLetterIndex, x)))
+    self._informListeners(lambda l : self._motorSequence.inform(
+      _Reporter(self._motorId, self._characterSequence, l).forMotorSequenceIndex))
 
   def _clearStatus(self):
     self._informListeners(lambda x : x.cleanup())
@@ -65,6 +64,19 @@ class Character:
   def logId(self):
     return "Character - " + str(self._motorId)
 
+class _Reporter:
+  def __init__(self, motorId, characterSequence, listener):
+    self._listener = listener
+    self._characterSequence = characterSequence
+    self._motorId = motorId
+
+  def forMotorSequenceIndex(self, sequenceId):
+    self._sequenceId = sequenceId
+    self._characterSequence.inform(self.forCharacterSequenceIndex)
+
+  def forCharacterSequenceIndex(self, characterSequenceIndex):
+    self._listener.set(self._motorId, characterSequenceIndex, self._sequenceId)
+
 # This class will keep track of where we are standing on a character.
 # A logical representation of a character is made by two components:
 # - Letters represented: [A, B, C, D]
@@ -97,10 +109,13 @@ class CharacterSequence:
       self._currentIndex = 0
     log(self, "Setting index: " + str(self._currentIndex))
 
-  def isMatching(self, value):
-    return self.getLetter() == value
+  def inform(self, listener):
+    listener(self._currentIndex)
 
-  def getLetter(self):
+  def isMatching(self, value):
+    return self._getLetter() == value
+
+  def _getLetter(self):
     return self._motorSequence[self._currentIndex]
 
   def __contains__(self, key):

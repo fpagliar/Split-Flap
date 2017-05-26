@@ -1,6 +1,6 @@
 from MotorSequence import MotorSequence
 from Display import Display
-from Character import Character
+from Character import Character, CharacterSequence
 from Timer import Timer
 from Connection import buildConnection, SequencePublisher, _ShiftRegistry, _ShiftRegistryController
 from Logger import log
@@ -39,8 +39,35 @@ class DisplayFactory:
     numberOfMotors = self._config.numberOfMotors()
     sequences = [self._createMotorSequence(i + 1, systemStatus.sequence(i + 1)) for i in range(numberOfMotors)]
     connection = buildConnection(self._config, self._pinBuilder, numberOfMotors, Timer())
-    characters = [Character(motorId + 1, sequences[motorId], self._config) for motorId in range(numberOfMotors)]
+    # TODO: get the correct values to create the sequence
+#     for motorId in range(numberOfMotors):
+#       characterSequence = CharacterSequence(motorId + 1, possibleValues, indexChanges, currentIndex)
+#     characters = [Character(motorId + 1, sequences[motorId], characterSequence) for motorId in range(numberOfMotors)]
+    characters = []
+    for motorId in range(numberOfMotors):
+      characterSequence = _UndefinedLengthSequence(self._config.alphabet())
+      characters.append(Character(motorId + 1, sequences[motorId], characterSequence))
     for character in characters:
       character.registerListener(systemStatus)
     return characters, SequencePublisher(sequences, connection)
+
+#   def standardCharacterSequence(self, motorId):
+#     return CharacterSequence(motorId, self._config.alphabet(), self._cali, currentIndex)
+
+class _UndefinedLengthSequence:
+  def __init__(self, values):
+    self._values = values
+    self._ticks = 0
+
+  def next(self):
+    self._ticks = self._ticks + 1
+
+  def isMatching(self, value):
+    return False
+
+  def __contains__(self, key):
+    return key in self._values
+
+  def inform(self, listener):
+    listener(self._ticks)
 
