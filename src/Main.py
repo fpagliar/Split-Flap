@@ -5,10 +5,14 @@ from Calibrator import Calibrator
 from DisplayFactory import DisplayFactory
 from Configuration import SystemConfiguration, SystemStatus
 import re
+from src.Configuration import SystemCalibration
+from curses.has_key import system
 
 # TODO:
 # 3 - Make character show the middle of the array instead of the first letter
-# 8 - Fix the building of the standard display by using the calibration file
+# 8 - Fix the building of the standard display by using the calibration file.
+# 9 - Offer slow calibration of characters.
+# 10 - DisplayFactory and Calibrator methods need some tidying up.
 
 option = None
 if len(sys.argv) > 1:
@@ -18,14 +22,21 @@ config = SystemConfiguration()
 if option == "--position":
     calibrator = Calibrator(Pin.GetPin, config)
     calibrator.calibrateInitialPosition()
-elif option == "--ticks":
+elif option == "--fine-tuning":
     calibrator = Calibrator(Pin.GetPin, config)
-    calibrator.calibrateTicksPerLetter()
+    calibrator.calibrateInitialPosition()
+    calibrator.calibrateTicksPerLetter(SystemStatus(config.numberOfMotors()), SystemCalibration())
+elif option == "--recalibrate":
+    calibrator = Calibrator(Pin.GetPin, config)
+    calibrator.calibrateInitialPosition()
+    systemCalibration = SystemCalibration()
+    systemCalibration.cleanup()
+    calibrator.calibrateTicksPerLetter(SystemStatus(config.numberOfMotors()), systemCalibration)
 elif option == "--message":
     display = DisplayFactory(Pin.GetPin, config).build(SystemStatus(config.numberOfMotors()))
     display.show(sys.argv[2])
 elif option == "--show":
-    display = DisplayFactory(Pin.GetPin, config).buildDisplay(SystemStatus(config.numberOfMotors()))
+    display = DisplayFactory(Pin.GetPin, config).buildDisplay(SystemStatus(config.numberOfMotors()), SystemCalibration())
     while True:
         display.show(input("What do you want to show next?"))
 elif option == "--character":
@@ -53,5 +64,5 @@ elif option == "--shift-registry":
         registry.set(binary)
 
 else:
-  print("Valid options: \n \t --position \n \t --ticks \n \t --message \n \t --show \n \t --character \n \t --infinite \n \t --shift-registry \n")
+  print("Valid options: \n \t --position \n \t --fine-tuning \n \t --recalibrate \n \t --message \n \t --show \n \t --character \n \t --infinite \n \t --shift-registry \n")
 

@@ -31,28 +31,27 @@ class DisplayFactory:
     controller = _ShiftRegistryController(self._pinBuilder(data), self._pinBuilder(clock), self._pinBuilder(shift), Timer())
     return _ShiftRegistry(controller, length)
 
-  def buildDisplay(self, systemStatus):
-    characters, publisher = self.buildCharacters(systemStatus)
+  def buildDisplay(self, systemStatus, systemCalibration):
+    characters, publisher = self._buildCharacters(systemStatus,
+                                                  lambda motorId: CharacterSequence(motorId, self._config.alphabet(),
+                                                                                    systemCalibration.ticksConfiguration(motorId),
+                                                                                    systemStatus.ticks(motorId)))
     return Display(characters, publisher)
 
   def buildCharacters(self, systemStatus):
+    return self._buildCharacters(systemStatus, lambda x: _UndefinedLengthSequence(self._config.alphabet()))
+
+  def _buildCharacters(self, systemStatus, sequenceBuilder):
     numberOfMotors = self._config.numberOfMotors()
     sequences = [self._createMotorSequence(i + 1, systemStatus.sequence(i + 1)) for i in range(numberOfMotors)]
     connection = buildConnection(self._config, self._pinBuilder, numberOfMotors, Timer())
-    # TODO: get the correct values to create the sequence
-#     for motorId in range(numberOfMotors):
-#       characterSequence = CharacterSequence(motorId + 1, possibleValues, indexChanges, currentIndex)
-#     characters = [Character(motorId + 1, sequences[motorId], characterSequence) for motorId in range(numberOfMotors)]
     characters = []
     for motorId in range(numberOfMotors):
-      characterSequence = _UndefinedLengthSequence(self._config.alphabet())
-      characters.append(Character(motorId + 1, sequences[motorId], characterSequence))
+      characters.append(Character(motorId + 1, sequences[motorId], sequenceBuilder(motorId)))
     for character in characters:
       character.registerListener(systemStatus)
     return characters, SequencePublisher(sequences, connection)
 
-#   def standardCharacterSequence(self, motorId):
-#     return CharacterSequence(motorId, self._config.alphabet(), self._cali, currentIndex)
 
 class _UndefinedLengthSequence:
   def __init__(self, values):
