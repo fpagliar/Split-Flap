@@ -2,7 +2,7 @@ from DisplayFactory import DisplayFactory
 from Logger import log
 import Utils
 import time
-from Configuration import SystemCalibration, SystemStatus
+from Configuration import SystemStatus
 
 # This class takes care of the calibration of each character.
 # calibrateInitialPosition will help us set the start position of the system. This is the way the program will be able to
@@ -21,14 +21,8 @@ class Calibrator:
       controller.tick(0)
       time.sleep(0.005)
 
-  def calibrateTicksPerLetter(self):
-    self.calibrateInitialPosition()
-
-    numberOfMotors = self._config.numberOfMotors()
-    status = SystemStatus(numberOfMotors)
-    status.load()
+  def calibrateTicksPerLetter(self, status, calibration):
     characters, publisher = DisplayFactory(self._pinBuilder, self._config).buildCharacters(status)
-    calibration = SystemCalibration(numberOfMotors)
 
     # Create alphabet
     alphabet = self._config.alphabet()
@@ -40,9 +34,17 @@ class Calibrator:
         character = characters[i - 1]
         print("Now calibrating the character " + str(i))
         ticksConfiguration = []
+        currentTicksConfiguration = calibration.ticksConfiguration(i)
         ticks = 0
-        for letter in alphabet[1:]:  # We start with A showing, so the next letter should be the first target
-          ticks = ticks + self._moveUntilInterrupted(_CharacterPublisher(character, publisher), i - 1 , "Is it showing character " + letter + "?", 1)
+        for letterIndex in range(alphabet[1:]):  # We start with A showing, so the next letter should be the first target
+          if currentTicksConfiguration and currentTicksConfiguration[letterIndex]:
+            closeTicks = int(currentTicksConfiguration[letterIndex] * 0.9)
+            for _ in range(closeTicks):
+              publisher.tick(i - 1)
+            ticks = ticks + closeTicks
+            ticks = ticks + self._moveUntilInterrupted(_CharacterPublisher(character, publisher), i - 1 , "Is it showing character " + alphabet[letterIndex] + "?", 5)
+          else:
+            ticks = ticks + self._moveUntilInterrupted(_CharacterPublisher(character, publisher), i - 1 , "Is it showing character " + alphabet[letterIndex] + "?", 0.5)
           ticksConfiguration.append(ticks)
         calibration.set(i, ticksConfiguration)
     print("Great, calibration ended")
