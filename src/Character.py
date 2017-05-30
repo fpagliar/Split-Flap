@@ -9,7 +9,6 @@ from Logger import log
 #                     ex: the display is currently showing C, but we want to show A, so we invoke setTarget('A')
 #       - tick:       Marks that a unit of time has passed, and so if the target is not met yet, we should move a unit towards it.
 #                     In order to move for it, we should increment the sequence on the motor, and make update the logic on the character to match it.
-
 class Character:
   def __init__(self, motorId, motorSequence, characterSequence):
     log(self, "Creating character with id: " + str(motorId))
@@ -86,7 +85,7 @@ class _Reporter:
 # This class will take this data, and represent it as a circular list, for example:
 #          [A, A, A, A, A, A, B, B, C, C, C, D]
 # and after the last D, it will cycle back to A (that is what the physical character should be showing)
-class CharacterSequence:
+class StartPointCharacterSequence:
   def __init__(self, charId, possibleValues, indexChanges, currentIndex):
     log(self, " creating from values: " + str(possibleValues), " and changes: " + str(indexChanges))
     self._motorSequence = []
@@ -123,3 +122,53 @@ class CharacterSequence:
 
   def logId(self):
     return "Character Sequence - " + str(self._motorId)
+
+# This character sequence will only accept it is showing a value when the letter is close to the half of it's interval.
+# For example:
+#             If letter B starts at 40 and goes until 100, at 40 the character should be showing letter B, but
+#             this sequence won't acknowledge it. It will only acknowledge when the ticks are at 64-76 (the 40%-60% range).
+# This will be of use when the limits are kind of diffuse, since the midpoint interval inside the letter range should always be
+# a safe bet that the letter is being shown.
+class MidPointCharacterSequence:
+  def __init__(self, charId, possibleValues, indexChanges, currentIndex):
+    log(self, " creating from values: " + str(possibleValues), " and changes: " + str(indexChanges))
+    self._id = charId
+    self._currentIndex = currentIndex
+    self._tokens = possibleValues
+    self._indexChanges = indexChanges
+
+  def next(self):
+    self._currentIndex = self._currentIndex + 1
+    if self._currentIndex > self._indexChanges[:-1]:
+      self._currentIndex = 0
+    log(self, "Setting index: " + str(self._currentIndex))
+
+  def inform(self, listener):
+    listener(self._currentIndex)
+
+  def isMatching(self, value):
+    return self._getLetter() == value
+
+  def _getLetter(self):
+    index = 0
+    while self._indexChanges[index] < self._currentIndex:
+      index = index + 1
+
+    if index == 0:
+      lowerPoint = 0
+    else:
+      lowerPoint = self._indexChanges[index - 1]
+    higherPoint = self._indexChanges[index]
+    delta = higherPoint - lowerPoint
+    targetIntervalRange = delta * 0.4
+
+    if self._currentIndex > lowerPoint + targetIntervalRange and self._currentIndex < higherPoint - targetIntervalRange:
+      return self._tokens[index]
+    else:
+      return None
+
+  def __contains__(self, key):
+    return key in self._tokens
+
+  def logId(self):
+    return "Character Midpoint Sequence - " + str(self._motorId)
