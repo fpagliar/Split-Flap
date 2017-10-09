@@ -9,7 +9,7 @@ def buildConnection(config, buildPinFor, length, timer):
     else:
         dataPin, clockPin, shiftPin = config.shiftRegistryPins()
         controller = _ShiftRegistryController(buildPinFor(dataPin), buildPinFor(clockPin), buildPinFor(shiftPin), timer)
-        return _ShiftRegistry(controller, length)
+        return _ShiftRegistry(controller, length*4)
 
 # This class will make the abstraction of relating sequences to connections.
 # It has only one method that is publish, and will transmit the current system status through the connections.
@@ -24,6 +24,7 @@ class SequencePublisher:
     log(self, "Publishing sequences: " + "\n".join([str(x) for x in self._sequences]))
     currentStatuses = [x.current() for x in self._sequences]
     binaryRepresentation = sum(currentStatuses, [])
+    #print(binaryRepresentation)
     pinRepresentation = [x == 1 for x in binaryRepresentation]
     self._listener.set(pinRepresentation)
 
