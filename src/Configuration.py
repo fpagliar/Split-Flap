@@ -89,7 +89,7 @@ class SystemConfiguration:
         [0, 0, 1, 0],
         [0, 0, 1, 1],
         [0, 0, 0, 1],
-      ][::-1]
+      ]
 
   def _load(self):
     loaderMap = {
