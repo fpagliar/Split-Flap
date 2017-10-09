@@ -1,6 +1,7 @@
 import sys
 import Pin
 import time
+
 from Calibrator import Calibrator
 from DisplayFactory import DisplayFactory
 from Configuration import SystemConfiguration, SystemStatus
@@ -14,7 +15,6 @@ from Configuration import SystemCalibration
 # 10 - DisplayFactory and Calibrator methods need some tidying up.
 # 11 - Calibrate copy value to others in the array
 # 12 - Figure out different run modes for windows and raspi
-# 13 - FIX BUG: after calibrating, should set ticks to 0, not max (it is out of range)
 
 option = None
 if len(sys.argv) > 1:
@@ -40,7 +40,11 @@ elif option == "--message":
 elif option == "--show":
     display = DisplayFactory(Pin.GetPin, config).buildDisplay(SystemStatus(config.numberOfMotors()), SystemCalibration(config.numberOfMotors()))
     while True:
-        display.show(raw_input("What do you want to show next?"))
+	for letter in raw_input("What do you want to show next?"):
+		display.show(letter)
+		time.sleep(2)
+	time.sleep(10)
+        #display.show(raw_input("What do you want to show next?"))
 elif option == "--character":
     display = DisplayFactory(Pin.GetPin, config).buildDisplay(SystemStatus(1))
     for char in config.alphabet():
@@ -53,12 +57,12 @@ elif option == "--shift-registry":
     length = 0
     while length <= 0:
       answer = input("Enter the desired length of the shift registry: ")
-      if answer.isdigit():
-        length = int(answer)
+      #if answer.isdigit():
+      length = int(answer)
     registry = DisplayFactory(Pin.GetPin, config).buildShiftRegistry(length)
     regex = re.compile("[01]{" + str(length) + "}")
     while True:
-      pattern = input("What do you want to show?")
+      pattern = raw_input("What do you want to show?")
       if regex.match(pattern) is None:
         print("Invalid input: " + pattern)
       else:
