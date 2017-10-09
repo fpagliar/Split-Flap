@@ -17,7 +17,7 @@ class Display:
   def run(self):
     while not self.hasFinished():
       self._tick()
-      time.sleep(1)  # TODO: remove, just to go slow for testing
+      #time.sleep(1)  # TODO: remove, just to go slow for testing
 
   def _tick(self):
     log(self, "Tick")

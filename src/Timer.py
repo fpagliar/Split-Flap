@@ -5,9 +5,9 @@ from datetime import datetime
 # Class used to wait for different time-constraint events
 class Timer:
   def __init__(self):
-    self._registryClockPulseWait = 0.01
-    self._registryPublishPulseWait = 0.1 
-    self._motorSequenceWait = 0.004
+    self._registryClockPulseWait = 0.0000001
+    self._registryPublishPulseWait = 0.000001 
+    self._motorSequenceWait = 0.00001
     self._showChunkWait = 60
     self._messageRepetitionWait = 5 * 60
     self._waitForInputRandom = 60
