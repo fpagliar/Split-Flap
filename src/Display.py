@@ -36,7 +36,7 @@ class Display:
     return "".join([elem.getCurrentLetter() for elem in self._characters])
 
   def hasFinished(self):
-    return all([elem.isReady() for elem in self._characters])
+    return all([elem.hasFinished() for elem in self._characters])
 
   def logId(self):
     return "Display"

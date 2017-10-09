@@ -87,7 +87,7 @@ class _Reporter:
 # and after the last D, it will cycle back to A (that is what the physical character should be showing)
 class StartPointCharacterSequence:
   def __init__(self, charId, possibleValues, indexChanges, currentIndex):
-    log(self, " creating from values: " + str(possibleValues), " and changes: " + str(indexChanges))
+    log(self, " creating from values: " + str(possibleValues) + " and changes: " + str(indexChanges))
     self._motorSequence = []
     self._id = charId
     self._populateSequence(possibleValues, indexChanges)
@@ -104,7 +104,7 @@ class StartPointCharacterSequence:
 
   def next(self):
     self._currentIndex = self._currentIndex + 1
-    if self._currentIndex > len(self._motorSequence):
+    if self._currentIndex >= len(self._motorSequence):
       self._currentIndex = 0
     log(self, "Setting index: " + str(self._currentIndex))
 
@@ -121,7 +121,7 @@ class StartPointCharacterSequence:
     return key in self._motorSequence
 
   def logId(self):
-    return "Character Sequence - " + str(self._motorId)
+    return "Character Sequence - " + str(self._id)
 
 # This character sequence will only accept it is showing a value when the letter is close to the half of it's interval.
 # For example:
@@ -131,7 +131,7 @@ class StartPointCharacterSequence:
 # a safe bet that the letter is being shown.
 class MidPointCharacterSequence:
   def __init__(self, charId, possibleValues, indexChanges, currentIndex):
-    log(self, " creating from values: " + str(possibleValues), " and changes: " + str(indexChanges))
+    log(self, " creating from values: " + str(possibleValues) + " and changes: " + str(indexChanges))
     self._id = charId
     self._currentIndex = currentIndex
     self._tokens = possibleValues
@@ -139,7 +139,7 @@ class MidPointCharacterSequence:
 
   def next(self):
     self._currentIndex = self._currentIndex + 1
-    if self._currentIndex > self._indexChanges[:-1]:
+    if self._currentIndex > self._indexChanges[-1]:
       self._currentIndex = 0
     log(self, "Setting index: " + str(self._currentIndex))
 
@@ -171,4 +171,4 @@ class MidPointCharacterSequence:
     return key in self._tokens
 
   def logId(self):
-    return "Character Midpoint Sequence - " + str(self._motorId)
+    return "Character Midpoint Sequence - " + str(self._id)

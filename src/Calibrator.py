@@ -28,27 +28,43 @@ class Calibrator:
     alphabet = self._config.alphabet()
     # Appending the first letter on the end, so that we calibrate the change from the last letter to the first one.
     alphabet.append(alphabet[0])
+    # Removing the first letter
+    alphabet = alphabet[1:]
 
-    for i in range(1, len(characters) + 1):
-      if Utils.askForConfirmation("Do you want to calibrate character: " + str(i)):
-        character = characters[i - 1]
-        print("Now calibrating the character " + str(i))
-        ticksConfiguration = []
-        currentTicksConfiguration = calibration.ticksConfiguration(i)
-        ticks = 0
-        for letterIndex in range(alphabet[1:]):  # We start with A showing, so the next letter should be the first target
-          if currentTicksConfiguration and currentTicksConfiguration[letterIndex]:
-            closeTicks = int(currentTicksConfiguration[letterIndex] * 0.9)
-            for _ in range(closeTicks):
-              publisher.tick(i - 1)
-            ticks = ticks + closeTicks
-            ticks = ticks + self._moveUntilInterrupted(_CharacterPublisher(character, publisher), i - 1 , "Is it showing character " + alphabet[letterIndex] + "?", 5)
-          else:
-            ticks = ticks + self._moveUntilInterrupted(_CharacterPublisher(character, publisher), i - 1 , "Is it showing character " + alphabet[letterIndex] + "?", 0.5)
-          ticksConfiguration.append(ticks)
-        calibration.set(i, ticksConfiguration)
+    for i in range(len(characters)):
+      if Utils.askForConfirmation("Do you want to calibrate character: " + str(i + 1)):
+        character = characters[i]
+        print("Now calibrating the character " + str(i + 1))
+        publisher = _CharacterPublisher(character, publisher)
+        calibration.set(i + 1, self._calibrateTicks(lambda : publisher.tick(i), calibration.ticksConfiguration(i), alphabet))
+        status.set(i + 1, 0, status.sequence(i + 1))
     print("Great, calibration ended")
     calibration.save()
+
+  def _calibrateTicks(self, tickFunction, currentTicksConfiguration, alphabet):
+    ticks = 0
+    newTicksConfiguration = []
+    previousTicksConfiguration = currentTicksConfiguration
+    for letterIndex in range(len(alphabet)):
+      if previousTicksConfiguration:
+        fastForwaredTicks = self._fastForwardIfCalibrated(tickFunction, previousTicksConfiguration, letterIndex)
+        ticks = ticks + fastForwaredTicks
+      ticks = ticks + self._stepUntilInterrupted(tickFunction, "Is it showing character " + alphabet[letterIndex] + "?")
+      if letterIndex == 0 and not previousTicksConfiguration:
+        previousTicksConfiguration = [ticks * (i + 1) for i in range(len(alphabet))]
+      newTicksConfiguration.append(ticks)
+      print("So far: " + str(newTicksConfiguration))
+    return newTicksConfiguration
+
+  def _fastForwardIfCalibrated(self, tickFunction, currentTicksConfiguration, index):
+    ticks = 0
+    intervalEnd = currentTicksConfiguration[index]
+    intervalStart = currentTicksConfiguration[index - 1] if index > 0 else 0
+    ticksToGetClose = int((intervalEnd - intervalStart) * 0.8)
+    for _ in range(ticksToGetClose):
+      tickFunction()
+      ticks = ticks + 1
+    return ticks
 
   def calibrateInitialPosition(self):
     numberOfMotors = self._config.numberOfMotors()
@@ -60,23 +76,35 @@ class Calibrator:
 
     for i in range (1, numberOfMotors + 1):
       print("Now configuring the character " + str(i))
-      self._moveUntilInterrupted(controller, i - 1, "Is it close to " + target + "?", 0.01)
-      self._moveUntilInterrupted(controller, i - 1, "Is it showing letter " + target + "?", 1)
+      self._keepTurningUntilInterrupted(lambda : controller.tick(i - 1), "Is it close to " + target + "?", 0.01)
+      self._stepUntilInterrupted(lambda : controller.tick(i - 1), "Is it showing letter " + target + "?")
       sequence = controller.getSequences()[i - 1]
       sequence.inform(lambda index: systemStatus.set(i, 0, index))
     print("Great, now the split-flap start position is correctly configured")
 
-  def _moveUntilInterrupted(self, controller, motorId, message, wait):
+#   def _moveUntilInterrupted(self, tickFunction, message, wait):
+#     self._stepUntilInterrupted(tickFunction, message, wait)
+
+  def _keepTurningUntilInterrupted(self, tickFunction, message, wait):
     print(message)
     ticks = 0
     # Will run until it hears the interruption
     try:
       while True:
-        controller.tick(motorId)
+        tickFunction()
         ticks = ticks + 1
         time.sleep(wait)
     except KeyboardInterrupt:
       pass
+    return ticks
+
+  def _stepUntilInterrupted(self, tickFunction, message):
+    print(message)
+    ticks = 0
+    while not Utils.askForConfirmation("Did it change yet?"):
+      tickFunction()
+      ticks = ticks + 1
+      print(str(ticks) + " so far")
     return ticks
 
 class _CharacterPublisher:
@@ -99,3 +127,5 @@ class _CalibratorSequencePublisher:
   def tick(self, index):
     self._sequences[index].next()
     self._connection.publish()
+    time.sleep(0.005)
+

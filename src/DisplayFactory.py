@@ -1,6 +1,6 @@
 from MotorSequence import MotorSequence
 from Display import Display
-from Character import Character, CharacterSequence
+from Character import Character, StartPointCharacterSequence, MidPointCharacterSequence
 from Timer import Timer
 from Connection import buildConnection, SequencePublisher, _ShiftRegistry, _ShiftRegistryController
 from Logger import log
@@ -33,7 +33,7 @@ class DisplayFactory:
 
   def buildDisplay(self, systemStatus, systemCalibration):
     characters, publisher = self._buildCharacters(systemStatus,
-                                                  lambda motorId: CharacterSequence(motorId, self._config.alphabet(),
+                                                  lambda motorId: MidPointCharacterSequence(motorId, self._config.alphabet(),
                                                                                     systemCalibration.ticksConfiguration(motorId),
                                                                                     systemStatus.ticks(motorId)))
     return Display(characters, publisher)
@@ -47,11 +47,10 @@ class DisplayFactory:
     connection = buildConnection(self._config, self._pinBuilder, numberOfMotors, Timer())
     characters = []
     for motorId in range(numberOfMotors):
-      characters.append(Character(motorId + 1, sequences[motorId], sequenceBuilder(motorId)))
+      characters.append(Character(motorId + 1, sequences[motorId], sequenceBuilder(motorId + 1)))
     for character in characters:
       character.registerListener(systemStatus)
     return characters, SequencePublisher(sequences, connection)
-
 
 class _UndefinedLengthSequence:
   def __init__(self, values):

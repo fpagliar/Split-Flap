@@ -5,14 +5,16 @@ from Calibrator import Calibrator
 from DisplayFactory import DisplayFactory
 from Configuration import SystemConfiguration, SystemStatus
 import re
-from src.Configuration import SystemCalibration
-from curses.has_key import system
+from Configuration import SystemCalibration
 
 # TODO:
 # 3 - Make character show the middle of the array instead of the first letter
 # 8 - Fix the building of the standard display by using the calibration file.
 # 9 - Offer slow calibration of characters.
 # 10 - DisplayFactory and Calibrator methods need some tidying up.
+# 11 - Calibrate copy value to others in the array
+# 12 - Figure out different run modes for windows and raspi
+# 13 - FIX BUG: after calibrating, should set ticks to 0, not max (it is out of range)
 
 option = None
 if len(sys.argv) > 1:
@@ -25,20 +27,20 @@ if option == "--position":
 elif option == "--fine-tuning":
     calibrator = Calibrator(Pin.GetPin, config)
     calibrator.calibrateInitialPosition()
-    calibrator.calibrateTicksPerLetter(SystemStatus(config.numberOfMotors()), SystemCalibration())
+    calibrator.calibrateTicksPerLetter(SystemStatus(config.numberOfMotors()), SystemCalibration(config.numberOfMotors()))
 elif option == "--recalibrate":
     calibrator = Calibrator(Pin.GetPin, config)
     calibrator.calibrateInitialPosition()
-    systemCalibration = SystemCalibration()
+    systemCalibration = SystemCalibration(config.numberOfMotors())
     systemCalibration.cleanup()
     calibrator.calibrateTicksPerLetter(SystemStatus(config.numberOfMotors()), systemCalibration)
 elif option == "--message":
     display = DisplayFactory(Pin.GetPin, config).build(SystemStatus(config.numberOfMotors()))
     display.show(sys.argv[2])
 elif option == "--show":
-    display = DisplayFactory(Pin.GetPin, config).buildDisplay(SystemStatus(config.numberOfMotors()), SystemCalibration())
+    display = DisplayFactory(Pin.GetPin, config).buildDisplay(SystemStatus(config.numberOfMotors()), SystemCalibration(config.numberOfMotors()))
     while True:
-        display.show(input("What do you want to show next?"))
+        display.show(raw_input("What do you want to show next?"))
 elif option == "--character":
     display = DisplayFactory(Pin.GetPin, config).buildDisplay(SystemStatus(1))
     for char in config.alphabet():

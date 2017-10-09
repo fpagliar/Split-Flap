@@ -1,6 +1,7 @@
 
 def askForConfirmation(message, wait = 0):
-  answer = input(message + " (y/N): ")
+  answer = input(message + " (y/N): ")  # issue with different python versions, input not working on my pi
+#   answer = raw_input(message + " (y/N): ")
   return answer and (answer[0] == "Y" or answer[0] == "y")
 
 def askForOption(message, dictionary):

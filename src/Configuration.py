@@ -1,6 +1,7 @@
 import collections
 import os.path
 from enum import Enum
+from symbol import except_clause
 
 class ConfigurationFile:
   _keySeparator = ":"
@@ -229,7 +230,10 @@ class SystemCalibration:
     self._config.set(motorId, SystemCalibration._key, ticksConfiguration)
 
   def ticksConfiguration(self, motorId):
-    return self._config.get(motorId, SystemCalibration._key)
+    try:
+      return self._config.get(motorId, SystemCalibration._key)
+    except KeyError:
+      return None  # There is no entry for this motorId
 
   def save(self):
     self._config.save()
