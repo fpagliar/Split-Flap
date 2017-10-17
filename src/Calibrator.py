@@ -40,6 +40,7 @@ class Calibrator:
         characterPublisher = _CharacterPublisher(character, publisher)
         calibration.set(i + 1, self._calibrateTicks(lambda : characterPublisher.tick(i), calibration.ticksConfiguration(i), alphabet))
         status.set(i + 1, 0, status.sequence(i + 1))
+        calibration.save()
     print("Great, calibration ended")
     calibration.save()
 
