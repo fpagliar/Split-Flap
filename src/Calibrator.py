@@ -16,10 +16,12 @@ class Calibrator:
     self._config = config
 
   def infiniteRun(self):
-    controller = _CalibratorSequencePublisher(self._pinBuilder, 1, self._config)
+    controller = _CalibratorSequencePublisher(self._pinBuilder, 4, self._config)
     while True:
       controller.tick(0)
-      time.sleep(0.005)
+      controller.tick(1)
+      controller.tick(2)
+      controller.tick(3)
 
   def calibrateTicksPerLetter(self, status, calibration):
     characters, publisher = DisplayFactory(self._pinBuilder, self._config).buildCharacters(status)
@@ -35,8 +37,8 @@ class Calibrator:
       if Utils.askForConfirmation("Do you want to calibrate character: " + str(i + 1)):
         character = characters[i]
         print("Now calibrating the character " + str(i + 1))
-        publisher = _CharacterPublisher(character, publisher)
-        calibration.set(i + 1, self._calibrateTicks(lambda : publisher.tick(i), calibration.ticksConfiguration(i), alphabet))
+        characterPublisher = _CharacterPublisher(character, publisher)
+        calibration.set(i + 1, self._calibrateTicks(lambda : characterPublisher.tick(i), calibration.ticksConfiguration(i), alphabet))
         status.set(i + 1, 0, status.sequence(i + 1))
     print("Great, calibration ended")
     calibration.save()
@@ -127,5 +129,4 @@ class _CalibratorSequencePublisher:
   def tick(self, index):
     self._sequences[index].next()
     self._connection.publish()
-    time.sleep(0.005)
 

@@ -11,12 +11,12 @@ from Logger import log
 #                     In order to move for it, we should increment the sequence on the motor, and make update the logic on the character to match it.
 class Character:
   def __init__(self, motorId, motorSequence, characterSequence):
-    log(self, "Creating character with id: " + str(motorId))
     self._motorId = motorId
     self._motorSequence = motorSequence
     self._characterSequence = characterSequence
     self._targetLetter = 'A'
     self._listeners = []
+    log(self, "Creating character with id: " + str(motorId))
 
   def registerListener(self, statusListener):
     self._listeners.append(statusListener)
@@ -131,11 +131,11 @@ class StartPointCharacterSequence:
 # a safe bet that the letter is being shown.
 class MidPointCharacterSequence:
   def __init__(self, charId, possibleValues, indexChanges, currentIndex):
-    log(self, " creating from values: " + str(possibleValues) + " and changes: " + str(indexChanges))
     self._id = charId
     self._currentIndex = currentIndex
     self._tokens = possibleValues
     self._indexChanges = indexChanges
+    log(self, " creating from values: " + str(possibleValues) + " and changes: " + str(indexChanges))
 
   def next(self):
     self._currentIndex = self._currentIndex + 1
